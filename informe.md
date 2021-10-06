@@ -43,7 +43,7 @@ sudo apt-get install -y qemu-system-i386
 
 # ¿Cómo correrlo?
 
-`cd xv6-modularized && make clean && make qemu-nox`
+`cd xv6-modularized && make clean && make CPUS=1 qemu-nox`
 
 ## Manejo básico de qemu
 
@@ -123,9 +123,7 @@ lapicw(TICR, 10000000);
 
 # Parte II: Cómo el planificador afecta a los procesos
 
-Pasamos a ver cómo el planificador de xv6 afecta a los distintos tipos de procesos en la práctica. Para ello se deberán integrar a xv6 los programas de espacio de
-usuario `iobench` y `cpubench` (que adjuntamos en el aula virtual). Estos programas realizan mediciones (no muy precisas) de respuesta de entrada/salida y de
-poder de cómputo, respectivamente.
+Pasamos a ver cómo el planificador de xv6 afecta a los distintos tipos de procesos en la práctica. Para ello se deberán integrar a xv6 los programas de espacio de usuario `iobench` y `cpubench` (que adjuntamos en el aula virtual). Estos programas realizan mediciones (no muy precisas) de respuesta de entrada/salida y de poder de cómputo, respectivamente.
 
 > Importante: Aunque xv6 soporta múltiples procesadores, debemos ejecutar nuestras mediciones(`iobench` y `cpubench`) lanzando la máquina virtual con un único procesador. (i.e. `make CPUS=1 qemu-nox`).
 
@@ -142,7 +140,7 @@ Caso 6: 2 cpubench
 Caso 7: 2 iobench
 ```
 
-2. Repita el experimento para quantums 10, 100 y 1000 veces más cortos. Tenga en cuenta que modificar el tick afecta el funcionamiento de iobench y cpubench, o sea que quizás necesite modificarlos para que mantengan un funcionamiento similar para que se puedan comparar los resultados en los distintos escenarios de prueba.
+2. Repita el experimento para quantums 10, 100 y 1000 veces más cortos. Tenga en cuenta que modificar el tick afecta el funcionamiento de `iobench` y `cpubench`, o sea que quizás necesite modificarlos para que mantengan un funcionamiento similar para que se puedan comparar los resultados en los distintos escenarios de prueba.
 
 ```java
 Escenario 0: quantum por defecto, se corren los casos anteriores (caso 0 al 7, no lo tienen que repetir usen los resultados del apartado anterior)
@@ -153,11 +151,9 @@ Escenario 3: quantum 1000 veces más corto, se corren los casos anteriores (caso
 
 # Parte III: Rastreando la prioridad de los procesos
 
-Habiendo visto las propiedades del planificador existente, lo reemplazar con un planificador MLFQ de tres niveles. A esto se debe hacer de manera gradual, primero
-rastrear la prioridad de los procesos, sin que esto afecte la planificación.
+Habiendo visto las propiedades del planificador existente, lo reemplazar con un planificador MLFQ de tres niveles. A esto se debe hacer de manera gradual, primero rastrear la prioridad de los procesos, sin que esto afecte la planificación.
 
-1. Agregue un campo en struct proc que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala
-actualizada según el comportamiento del proceso:
+1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala actualizada según el comportamiento del proceso:
 
 - MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
 - MLFQ regla 4: Descender de prioridad cada vez que el proceso pasa todo un quantum realizando cómputo.
@@ -165,7 +161,7 @@ actualizada según el comportamiento del proceso:
 
 > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
-1. Para comprobar que estos cambios se hicieron correctamente, modifique la función procdump (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
+1. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
 
 # Parte IV: Implementando MLFQ
 
@@ -176,26 +172,21 @@ Finalmente implementar la planificación propiamente dicha para que nuestro xv6 
 
 2. Repita las mediciones de la segunda parte para ver las propiedades del nuevo planificador.
 
-3. Para análisis responda: ¿Se puede producir starvation en el nuevo planificador? Justifique su respuesta.
+3. Para análisis responda: ¿Se puede producir `starvation` en el nuevo planificador? Justifique su respuesta.
 
 > Importante: Mucho cuidado con el uso correcto del mutex `ptable.lock`.
 
 # Puntos estrellas
 
 - Del planificador:
-  1. [ ] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: Priority boost.
-  2. [ ] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum .
-  3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo busy waiting. Modifique el planificador de
-  manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción hlt .
-  4. [ ] (Difícil) Cuando xv6 corre en una máquina virtual con 2 procesadores, la performance de los procesos varía significativamente según cuántos
-  procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta
-  mantenerlos en el mismo procesador?
-  5. [ ] (Muy difícil) Y si no quisiéramos usar los ticks periódicos del timer por el problema de (1), ¿qué haríamos? Investigue cómo funciona e implemente un
-  tickless kernel.
+  1. [ ] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
+  2. [ ] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum.
+  3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo busy waiting. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción hlt.
+  4. [ ] (Difícil) Cuando xv6 corre en una máquina virtual con 2 procesadores, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
+  5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de (1), ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
-  - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de
-usuario.
+  - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ---
 
