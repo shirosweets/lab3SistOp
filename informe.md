@@ -25,6 +25,7 @@
     - [Respuesta 2b](#respuesta-2b)
 - [Parte II: Cómo el planificador afecta a los procesos](#parte-ii-cómo-el-planificador-afecta-a-los-procesos)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
+  - [MLFQ regla 3: rastreo de prioridad](#mlfq-regla-3-rastreo-de-prioridad)
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
 - [Puntos estrellas](#puntos-estrellas)
 
@@ -162,6 +163,11 @@ Habiendo visto las propiedades del planificador existente, lo reemplazar con un 
 > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
 1. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
+
+## MLFQ regla 3: rastreo de prioridad
+
+- El valor **máximo de la prioridad** es el valor `0`,
+- y el valor `NPRIO` es la **prioridad mínima**.
 
 # Parte IV: Implementando MLFQ
 
