@@ -10,6 +10,7 @@ bootblock
 entryother
 initcode
 initcode.out
+kernel/kernel
 kernelmemfs
 mkfs/mkfs
 .gdbinit
