@@ -108,6 +108,17 @@ b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 ### Respuesta 2a
 
+Dura 10 millones de ticks, que en xv6 asumimos que es en `10ms`.
+
+En el archivo `lapic.c`:
+```c
+// The timer repeatedly counts down at bus frequency
+// from lapic[TICR] and then issues an interrupt.
+// If xv6 cared more about precise timekeeping,
+// TICR would be calibrated using an external time source.
+lapicw(TICR, 10000000);
+```
+
 ### Respuesta 2b
 
 # Parte II: Cómo el planificador afecta a los procesos
