@@ -167,10 +167,12 @@ $(MKFS)/mkfs: $(MKFS)/mkfs.c $(L)/fs.h
 
 UPROGS=\
 	$(U)/_cat\
+	$(U)/_cpubench\
 	$(U)/_echo\
 	$(U)/_forktest\
 	$(U)/_grep\
 	$(U)/_init\
+	$(U)/_iobench\
 	$(U)/_kill\
 	$(U)/_ln\
 	$(U)/_ls\
