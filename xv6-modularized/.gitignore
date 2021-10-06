@@ -10,9 +10,7 @@ bootblock
 entryother
 initcode
 initcode.out
-kernel
 kernelmemfs
 mkfs/mkfs
 .gdbinit
-
 .vscode
