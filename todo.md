@@ -1,3 +1,22 @@
 - [x] Clonar el repositorio modularizado de xv6.
 
 - [x] Añadir el README.md
+
+- [ ] Parte 1
+  - [x] Pregunta 1.
+  - [ ] Pregunta 2
+    - [x] Pregunta 2a.
+    - [ ] Pregunta 2b.
+- [ ] Parte 2
+  - [ ] Medición 1.
+  - [ ] Medición 2.
+- [ ] Parte 3
+  - [x] Implementación 1.
+    - [ ] Averigüar cómo resetear el clock del quantum.
+  - [ ] Implementación 2.
+- [ ] Parte 4
+  - [ ] Implementación 1.
+    - [ ] Regla 1.
+    - [ ] Regla 2.
+  - [ ] Medición parte 4.
+  - [ ] Pregunta 3.
