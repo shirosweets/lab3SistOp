@@ -72,8 +72,8 @@ Y para matarlo: `kill pid`
 a. ¿Qué política utiliza xv6 para elegir el próximo proceso a correr?
 
 > Pista: xv6 nunca sale de la función scheduler por medios "normales".
-### Respuesta 1a
-La política que utiliza el xv6 es **round robin**, esto le define un *quantum* (que en xv6 equivale a `10ms`) exacto a cada proceso, corriéndolos uno detrás de otro respecto a un orden que cuando se acaba la lista vuelve a empezar.
+### Respuesta 
+La política que utiliza el xv6 es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado llamado **quantum**.
 
 ```c
 void
@@ -117,7 +117,7 @@ b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 ### Respuesta 2a
 
-Dura 10 millones de ticks, que en xv6 asumimos que es en `10ms`.
+Cada vez que hay un timer interrupt el proceso que esta corriendo le entrega el control al kernel, lo que quiere decir que el quantum dura el mismo tiempo que existe entre timer interrupts, en el archivo lapic.c se indica que el timer cuenta 10000000 ticks para hacer un timer interrupt, estos ticks dependen de la velocidad del procesador. Ejemplo: En un procesador con una velocidad de 900MHz se producen 900 millones de ticks por segundo, lo que quiere decir que produce 10000000 de ticks en aproximadamente 0,0111 segundos que es una centésima de segundo.
 
 En el archivo `lapic.c`:
 ```c
@@ -130,7 +130,7 @@ lapicw(TICR, 10000000);
 
 ### Respuesta 2b
 
-> Escribir respuesta 2b
+Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum a todos los procesos, pero si es posible modificar el código para darle distintos quantums a los procesos.
 
 # Parte II: Cómo el planificador afecta a los procesos
 
@@ -162,7 +162,7 @@ Escenario 3: quantum 1000 veces más corto, se corren los casos anteriores (caso
 
 # Parte III: Rastreando la prioridad de los procesos
 
-Habiendo visto las propiedades del planificador existente, lo reemplazar con un planificador MLFQ de tres niveles. A esto se debe hacer de manera gradual, primero rastrear la prioridad de los procesos, sin que esto afecte la planificación.
+Habiendo visto las propiedades del planificador existente, reemplazarlo con un planificador MLFQ de tres niveles. Esto se debe hacer de manera gradual, primero rastrear la prioridad de los procesos, sin que esto afecte la planificación.
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala actualizada según el comportamiento del proceso:
 
