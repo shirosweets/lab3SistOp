@@ -130,6 +130,8 @@ lapicw(TICR, 10000000);
 
 ### Respuesta 2b
 
+> Escribir respuesta 2b
+
 # Parte II: Cómo el planificador afecta a los procesos
 
 Pasamos a ver cómo el planificador de xv6 afecta a los distintos tipos de procesos en la práctica. Para ello se deberán integrar a xv6 los programas de espacio de usuario `iobench` y `cpubench` (que adjuntamos en el aula virtual). Estos programas realizan mediciones (no muy precisas) de respuesta de entrada/salida y de poder de cómputo, respectivamente.
@@ -164,10 +166,10 @@ Habiendo visto las propiedades del planificador existente, lo reemplazar con un 
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala actualizada según el comportamiento del proceso:
 
-- MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
-- MLFQ regla 4:
-  - Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
-  - Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
+* MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
+* MLFQ regla 4:
+  * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
+  * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
 
 > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
@@ -175,12 +177,12 @@ Habiendo visto las propiedades del planificador existente, lo reemplazar con un 
 
 ## MLFQ regla 3: rastreo de prioridad
 
-- El valor **máximo de la prioridad** es el valor `0`,
-- y el valor `NPRIO` es la **prioridad mínima**.
+* El valor **máximo de la prioridad** es el valor `0`,
+* y el valor `NPRIO` es la **prioridad mínima**.
 
 Explicación de los archivos:
 
-- `trap.h`: define los "traps" y los *interrupts del kernel*.
+* `trap.h`: define los "traps" y los *interrupts del kernel*.
 
 Entre ellos está el siguiente:
 
@@ -190,7 +192,7 @@ Entre ellos está el siguiente:
 
 Este define el interrupt llamado periodicamente por el hardware que usa el scheduler para medir los *quantums*.
 
-- `trap.c`: este implementa todas las traps, entre ellas las **syscalls** (con la función de su mismo nombre, `syscall()`) y los **interrupts del timer** (con la función `yield()`).
+* `trap.c`: este implementa todas las traps, entre ellas las **syscalls** (con la función de su mismo nombre, `syscall()`) y los **interrupts del timer** (con la función `yield()`).
 
 Donde el descenso de prioridad ocurre en el `yield()`
 ```c
@@ -207,8 +209,8 @@ Y los ascensos de prioridad ocurren en el `syscall()`
 
 Finalmente implementar la planificación propiamente dicha para que nuestro xv6 utilice MLFQ.
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
-- MLFQ regla 1: Si el proceso A tiene mayor prioridad que el proceso B, corre A. (y no B)
-- MLFQ regla 2: Si dos procesos A y B tienen la misma prioridad, corren en round-robin por el quantum determinado.
+   * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
+   * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en round-robin por el quantum determinado.
 
 2. Repita las mediciones de la segunda parte para ver las propiedades del nuevo planificador.
 
@@ -230,4 +232,4 @@ Finalmente implementar la planificación propiamente dicha para que nuestro xv6 
 
 ---
 
-**[README](README.md) | [CONSIGNA](consigna.md) | [To Do](todo.md)*
+**[README](README.md) | [CONSIGNA](consigna.md) | [To Do](todo.md)**
