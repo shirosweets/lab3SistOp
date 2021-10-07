@@ -78,7 +78,7 @@ allocproc(void)
 
   acquire(&ptable.lock);
 
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED){
       p->state = EMBRYO;
       p->pid = nextpid++;
@@ -110,10 +110,10 @@ allocproc(void)
 
       return p;
     }
-    else{
-      release(&ptable.lock);
-      return 0;
-    }
+  }
+
+  release(&ptable.lock);
+  return 0;
 }
 
 //PAGEBREAK: 32
@@ -386,6 +386,10 @@ void
 yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
+
+  // Desciende la prioridad del scheduler
+  myproc()->priority += (myproc()->priority == NPRIO) ? 0 : 1;
+
   myproc()->state = RUNNABLE;
   sched();
   release(&ptable.lock);

@@ -46,6 +46,14 @@ sudo apt-get install -y qemu-system-i386
 
 `cd xv6-modularized && make clean && make CPUS=1 qemu-nox`
 
+Para correr las benchmarks se debe escribir:
+
+`cpubench &`
+
+`iobench &`
+
+Y para matarlo: `kill pid`
+
 ## Manejo básico de qemu
 
 - Para listar los procesos dentro de xv6 hacer `<CRTL-p>`.
@@ -157,8 +165,9 @@ Habiendo visto las propiedades del planificador existente, lo reemplazar con un 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala actualizada según el comportamiento del proceso:
 
 - MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
-- MLFQ regla 4: Descender de prioridad cada vez que el proceso pasa todo un quantum realizando cómputo.
-- Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
+- MLFQ regla 4:
+  - Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
+  - Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
 
 > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
@@ -168,6 +177,31 @@ Habiendo visto las propiedades del planificador existente, lo reemplazar con un 
 
 - El valor **máximo de la prioridad** es el valor `0`,
 - y el valor `NPRIO` es la **prioridad mínima**.
+
+Explicación de los archivos:
+
+- `trap.h`: define los "traps" y los *interrupts del kernel*.
+
+Entre ellos está el siguiente:
+
+```c
+#define IRQ_TIMER        0
+```
+
+Este define el interrupt llamado periodicamente por el hardware que usa el scheduler para medir los *quantums*.
+
+- `trap.c`: este implementa todas las traps, entre ellas las **syscalls** (con la función de su mismo nombre, `syscall()`) y los **interrupts del timer** (con la función `yield()`).
+
+Donde el descenso de prioridad ocurre en el `yield()`
+```c
+// Force process to give up CPU on clock tick.
+// If interrupts were on while locks held, would need to check nlock.
+if(myproc() && myproc()->state == RUNNING &&
+    tf->trapno == T_IRQ0+IRQ_TIMER)
+  yield();
+```
+
+Y los ascensos de prioridad ocurren en el `syscall()`
 
 # Parte IV: Implementando MLFQ
 
