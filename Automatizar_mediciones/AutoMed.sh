@@ -1,15 +1,21 @@
 
+# Lista generada con Generador_listas.hs
 xs=(
-    "iobench > 1io_io1.txt &"
-    "iobench > 1io1cpu_io1.txt & \n cpubench > 1io1cpu_cpu1.txt &"
+    "iobench > 0cpu1io_iobench1.txt &\n"
+    "iobench > 0cpu2io_iobench1.txt &\niobench > 0cpu2io_iobench2.txt &\n"
+    "cpubench > 1cpu0io_cpubench1.txt &\n"
+    "cpubench > 1cpu1io_cpubench1.txt &\niobench > 1cpu1io_iobench1.txt &\n"
+    "cpubench > 1cpu2io_cpubench1.txt &\niobench > 1cpu2io_iobench1.txt &\niobench > 1cpu2io_iobench2.txt &\n"
+    "cpubench > 2cpu0io_cpubench1.txt &\ncpubench > 2cpu0io_cpubench2.txt &\n"
+    "cpubench > 2cpu1io_cpubench1.txt &\ncpubench > 2cpu1io_cpubench2.txt &\niobench > 2cpu1io_iobench1.txt &\n"
+    "cpubench > 2cpu2io_cpubench1.txt &\ncpubench > 2cpu2io_cpubench2.txt &\niobench > 2cpu2io_iobench1.txt &\niobench > 2cpu2io_iobench2.txt &\n"
 )
 
 (
-    for i in 0 1;
+    for i in {0..7};
         do
-        echo -e "${xs[i]}"
         (sleep 2; echo -e "${xs[i]}") | make qemu-nox > output.temp &
-        sleep 2 #302 # 2+5*60
+        sleep 302 # 2+5*60
         pkill qemu
     done;
 ) > output.temp
