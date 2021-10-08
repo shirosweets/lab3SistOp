@@ -136,8 +136,6 @@ syscall(void)
 
   num = curproc->tf->eax;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    // Asciende la prioridad del scheduler
-    curproc->priority -= (curproc->priority == 0) ? 0 : 1;
     curproc->tf->eax = syscalls[num]();
   }
   else {
