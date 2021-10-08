@@ -2,18 +2,18 @@
 
 - [x] Añadir el README.md
 
-- [ ] Parte 1
+- [x] Parte 1
   - [x] Pregunta 1.
-  - [ ] Pregunta 2
+  - [x] Pregunta 2
     - [x] Pregunta 2a. (Tiffany)
     - [x] Pregunta 2b. (Tiffany)
 - [ ] Parte 2
   - [ ] Medición 1. (Todos)
   - [ ] Medición 2. (Todos)
-- [ ] Parte 3
+- [x] Parte 3
   - [x] Implementación 1.
     - [x] Averigüar cómo resetear el clock del quantum.
-  - [ ] Implementación 2.
+  - [x] Implementación 2.
 - [ ] Parte 4 (Iván y Tiffany)
   - [ ] Implementación 1.
     - [ ] Regla 1.
