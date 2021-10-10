@@ -324,10 +324,10 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *p1;
   struct cpu *c = mycpu();
   c->proc = 0;
-  uint high_priority = 0u;
-
+  struct proc *process_to_run = 0;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -339,9 +339,20 @@ scheduler(void)
       if(p->state != RUNNABLE)
         continue;
 
+      process_to_run = p;
+
+      for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
+        if(p1->state != RUNNABLE)
+          continue;
+
+        if(p->priority > p1->priority)
+          process_to_run = p1;
+      }
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
+      p = process_to_run;
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
