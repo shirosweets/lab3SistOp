@@ -12,15 +12,12 @@ xs=(
 )
 
 (
-    for i in {0..7};
-        do
-        (sleep 2; echo -e "${xs[i]}") | make qemu-nox > output.temp &
+    for i in {0..7}; do
+        (sleep 2; echo -e "${xs[i]}") | make qemu-nox CPUS=1 > /dev/null &
         sleep 302 # 2+5*60
         pkill qemu
     done;
-) > output.temp
-
-rm output.temp
+) > /dev/null
 
 
 

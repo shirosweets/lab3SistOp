@@ -26,16 +26,18 @@ comandos (cpu, io) = unlines $
 
 archivos :: (Word, Word) -> [String]
 archivos (cpu, io) =
-    [""+| cpu |+"cpu"+| io |+"io_cpubench" +| ncpu
+    [""+| cpu |+"cpu"+| io |+"io_cpubench" +| ncpu |+".txt"
         | ncpu <- [1..cpu]
     ]
-    ++ [""+| cpu |+"cpu"+| io |+"io_iobench" +| nio
+    ++ [""+| cpu |+"cpu"+| io |+"io_iobench" +| nio |+".txt"
         | nio <- [1..io]
     ]
 
 
 
 comandos_test :: [String]
-comandos_test = [comandos (cpu, io) | (cpu, io) <- tests]
+comandos_test = comandos <$> tests
 
+archivos_test :: [String]
+archivos_test = tests >>= archivos
 
