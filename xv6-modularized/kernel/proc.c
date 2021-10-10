@@ -326,6 +326,8 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+  uint high_priority = 0u;
+
 
   for(;;){
     // Enable interrupts on this processor.
