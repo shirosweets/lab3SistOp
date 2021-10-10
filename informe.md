@@ -11,6 +11,7 @@
 ---
 
 # Contenido
+
 - [Informe lab 3](#informe-lab-3)
 - [Contenido](#contenido)
 - [Instalación](#instalación)
@@ -36,6 +37,7 @@
 # Instalación
 
 ## QEMU
+
 ```bash
 sudo apt-get update -y
 ```
@@ -63,6 +65,7 @@ Y para matarlo: `kill pid`
 - Salir de QEMU: `<CTRL-a> x`.
 
 - Para iniciar QEMU CON pantalla VGA: `make qemu`.
+
 - Para iniciar QEMU SIN pantalla VGA: `make qemu-nox`.
 
 ---
@@ -70,12 +73,14 @@ Y para matarlo: `kill pid`
 # Parte I: Estudiando el planificador de xv6
 
 ## Pregunta 1
+
 1. Analizar el código del planificador y responda:
-a. ¿Qué política utiliza xv6 para elegir el próximo proceso a correr?
+   a. ¿Qué política utiliza xv6 para elegir el próximo proceso a correr?
 
 > Pista: xv6 nunca sale de la función scheduler por medios "normales".
 
 ### Respuesta 1
+
 La política que utiliza el xv6 es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado denominado **quantum**.
 
 ```c
@@ -109,12 +114,14 @@ scheduler(void)
 ```
 
 Referencias:
+
 - [cs537p2b_xv6Scheduler.pdf](http://pages.cs.wisc.edu/~kzhao32/projects/cs537p2b_xv6Scheduler.pdf)
 
 ## Pregunta 2
+
 2. Analizar el código que interrumpe a un proceso al final de su quantum y responda:
-a. ¿Cuánto dura un quantum en xv6?
-b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
+   a. ¿Cuánto dura un quantum en xv6?
+   b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 > Pista: Se puede empezar a buscar desde la system call uptime .
 
@@ -125,6 +132,7 @@ Cada vez que hay un timer interrupt, el proceso que está corriendo le entrega e
 Ejemplo: En un procesador con una velocidad de `900MHz` se producen 900 millones de ticks por segundo, lo que quiere decir que produce `10000000` de ticks en aproximadamente 0,0111 segundos que es una centésima de segundo.
 
 En el archivo `lapic.c`:
+
 ```c
 // The timer repeatedly counts down at bus frequency
 // from lapic[TICR] and then issues an interrupt.
@@ -139,14 +147,39 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
 # Parte II: Cómo el planificador afecta a los procesos
 
-Pasamos a ver cómo el planificador de xv6 afecta a los distintos tipos de procesos en la práctica. Para ello debemos hacer mediciones usando los programas `cpubench` que calcula el número de kiloflops por tick de xv6, y `iobench` que calcula el número de procesos de IO que se realizan por tick de xv6.
+    El tipo de planificador puede influir en cuantos recursos se le asignan a cada proceso. En particular, el planificador *round robin* que viene en xv6 ejecuta a todos los procesos la misma cantidad de tiempo, mientras que el planificador MLFQ (multi level feedback queue) ejecuta mas a algunos procesos que a otros.
+
+    Es interesante, y muy útil, saber como afecta de distinta manera a los procesos de distintos tipos. Para eso, junto con la consigna nos dieron 2 programas que miden cuanto pueden hacer de distintas cosas.
+
+    El programa `cpubench` mide la cantidad de operaciones de punto flotante que puede hacer en una cierta cantidad de ticks del sistema operativo. En particular, mide las operaciones que puede hacer en `MINTICKS` (definido por defecto en `250`) ticks del sistema operativo, y lo imprimé en KFLOPT (kilo floating point operations per tick) (por defecto lo imprimia en MFLOPT (mega en lugar de kilo), pero es un error, ya que lo calcula en kilo), así que nosotros lo cambiamos.
+
+    Los ticks del sistema operativos cuentan con la llamada al sistema `uptime` y en el xv6 original son la cantidad de interrupciones por timer producidos. Esto causa que si se hace que el timer sea mas chico, las mediciones de `cpubench` den menos, incluso cuando la cantidad de tiempo fue la misma, pero, tiene la ventaja de que no depende de la velocidad del procesador, ya que por mas que cambie la velocidad a la que el procesador ejecuta las instrucciones, la cantidad de instrucciones ejecutadas entre una interrupción y la otra son las mismas.
+
+    El otro programa que dieron es `iobench` que mide la cantidad de escrituras y lecturas de un archivo que puede hacer en `MINTICKS` ticks del sistema operativo, y las imprime en IOP`MINTICKS`T (input output operations per `MINTICKS` ticks). Este número se puede convertir en IOPT dividiendo por `MINTICKS`, el motivo por el cual posiblemente no lo imprima directamente en en IOPT es que el `printf` de xv6 solo puede imprimir enteros, y si se dividiera el valor en `MINTICKS` y luego se lo convirtiera en `int`, se perdería mucha precisión.
+
+    En la consigna se pide ejecutar en distintas combinaciones estos programas con el planificador por defecto y con el nuestro, para poder compararlos. Hacer eso a mano es bastante trabajo, así que nosotros decidimos intentar automatizarlo un poco.
+
+    Para automatizarlo hicimos 2 scripts en la carpeta Automatizar_mediciones, uno que se encarga de ejecutar todos los test y guardar los resultados en archivos dentro de xv6, y otro que se encargue de extraer de xv6 los archivos esos.
+
+    A continuación una explicación de como funciona cada uno de ellos:
+
+### `AutoMed.sh`
+
+Explicación iobench y cpubench en el informe
+
+### `Extrear_archivos.sh`
+
+ 
+
+## Automatizado de testeos
+
+    
 
 # Parte III: Rastreando la prioridad de los procesos
 
 Habiendo visto las propiedades del planificador existente, reemplazarlo con un planificador MLFQ de tres niveles. Esto se debe hacer de manera gradual, primero rastrear la prioridad de los procesos, sin que esto afecte la planificación.
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala actualizada según el comportamiento del proceso:
-
 * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
 * MLFQ regla 4:
   * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
@@ -178,6 +211,7 @@ Este define el interrupt llamado periódicamente por el hardware que usa el sche
 ## MLFQ regla 4: descenso y ascenso de prioridad
 
 Donde el **descenso de prioridad** ocurre en el `yield()`
+
 ```c
 // Force process to give up CPU on clock tick.
 // If interrupts were on while locks held, would need to check nlock.
@@ -188,11 +222,12 @@ if(myproc() && myproc()->state == RUNNING &&
 
 Y el **ascenso de prioridad** ocurre en el `sleep()` ya que es donde se cambia de estado de `RUNNING` a `SLEEPING` y esto indica que el proceso pasa a estar **bloqueado**, como lo indica la regla 4.
 
-
 # Parte IV: Implementando MLFQ
 
 Finalmente implementar la planificación propiamente dicha para que nuestro xv6 utilice MLFQ.
+
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
+   
    * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
    * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en round-robin por el quantum determinado.
 
@@ -209,6 +244,7 @@ Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de pro
 # Puntos estrellas
 
 - Del planificador:
+  
   1. [ ] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
   2. [ ] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum.
   3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo busy waiting. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción hlt.
@@ -216,6 +252,7 @@ Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de pro
   5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de (1), ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
+  
   - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ---
