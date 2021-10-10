@@ -28,6 +28,7 @@
   - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
   - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
+  - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
 - [Puntos estrellas](#puntos-estrellas)
 
 ---
@@ -75,7 +76,7 @@ a. ¿Qué política utiliza xv6 para elegir el próximo proceso a correr?
 > Pista: xv6 nunca sale de la función scheduler por medios "normales".
 
 ### Respuesta 1
-La política que utiliza el xv6 es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado llamado **quantum**.
+La política que utiliza el xv6 es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado denominado **quantum**.
 
 ```c
 void
@@ -138,31 +139,7 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
 # Parte II: Cómo el planificador afecta a los procesos
 
-Pasamos a ver cómo el planificador de xv6 afecta a los distintos tipos de procesos en la práctica. Para ello se deberán integrar a xv6 los programas de espacio de usuario `iobench` y `cpubench` (que adjuntamos en el aula virtual). Estos programas realizan mediciones (no muy precisas) de respuesta de entrada/salida y de poder de cómputo, respectivamente.
-
-> Importante: Aunque xv6 soporta múltiples procesadores, debemos ejecutar nuestras mediciones(`iobench` y `cpubench`) lanzando la máquina virtual con un único procesador. (i.e. `make CPUS=1 qemu-nox`).
-
-1. Mida la respuesta de I/O y el poder de cómputo obtenido para las distintas combinaciones posibles entre 0 y 2 `iobench` junto con entre 0 y 2 `cpubench`, y grafique los resultados en el informe.
-
-```java
-Caso 0: 1 iobench
-Caso 1: 1 iobench 1 cpubench
-Caso 2: 1 iobench 2 cpubench
-Caso 3: 1 cpubench
-Caso 4: 1 cpubench 2 iobench
-Caso 5: 2 cpubench 2 iobench
-Caso 6: 2 cpubench
-Caso 7: 2 iobench
-```
-
-2. Repita el experimento para quantums 10, 100 y 1000 veces más cortos. Tenga en cuenta que modificar el tick afecta el funcionamiento de `iobench` y `cpubench`, o sea que quizás necesite modificarlos para que mantengan un funcionamiento similar para que se puedan comparar los resultados en los distintos escenarios de prueba.
-
-```java
-Escenario 0: quantum por defecto, se corren los casos anteriores (caso 0 al 7, no lo tienen que repetir usen los resultados del apartado anterior)
-Escenario 1: quantum 10 veces más corto, se corren los casos anteriores (caso 0 al 7)
-Escenario 2: quantum 100 veces más corto, se corren los casos anteriores (caso 0 al 7)
-Escenario 3: quantum 1000 veces más corto, se corren los casos anteriores (caso 0 al 7)
-```
+Pasamos a ver cómo el planificador de xv6 afecta a los distintos tipos de procesos en la práctica. Para ello debemos hacer mediciones usando los programas `cpubench` que calcula el número de kiloflops por tick de xv6, y `iobench` que calcula el número de procesos de IO que se realizan por tick de xv6.
 
 # Parte III: Rastreando la prioridad de los procesos
 
@@ -194,7 +171,7 @@ Entre ellos está el siguiente:
 #define IRQ_TIMER        0
 ```
 
-Este define el interrupt llamado periodicamente por el hardware que usa el scheduler para medir los *quantums*.
+Este define el interrupt llamado periódicamente por el hardware que usa el scheduler para medir los *quantums*.
 
 * `trap.c`: este implementa todas las traps, entre ellas las **syscalls** (con la función de su mismo nombre, `syscall()`) y los **interrupts del timer** (con la función `yield()`).
 
@@ -224,6 +201,10 @@ Finalmente implementar la planificación propiamente dicha para que nuestro xv6 
 3. Para análisis responda: ¿Se puede producir `starvation` en el nuevo planificador? Justifique su respuesta.
 
 > Importante: Mucho cuidado con el uso correcto del mutex `ptable.lock`.
+
+## MLFQ regla 1: correr el proceso de mayor prioridad
+
+Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de procesos de manera que se ejecutaba cada proceso en estado *runnable* durante un quantum. Para poder ejecutar el proceso con la mayor prioridad se cambio para colocar un ciclo adicional en el que se compara el proceso seleccionado con el resto de los procesos en la tabla, de manera tal que se almacena en una variable el proceso de mayor prioridad, si el proceso seleccionado inicialmente es el de mayor prioridad en la tabla, entonces se corre ese proceso, en cambio si se encontro un proceso de mayor prioridad, entonces se seguira recorriendo la tabla hasta encontrar el proceso con mayor prioridad para ejecutar. 
 
 # Puntos estrellas
 
