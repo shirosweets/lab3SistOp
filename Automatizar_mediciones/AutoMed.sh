@@ -10,6 +10,7 @@ tests=(
   "cpubench > 2cpu2io_cpubench1.txt &\ncpubench > 2cpu2io_cpubench2.txt &\niobench > 2cpu2io_iobench1.txt &\niobench > 2cpu2io_iobench2.txt &\n"
 )
 
+# Ejecutar desde carpeta xv-modularized y después de hacer make qemu
 (
   for i in {0..7}; do
     (sleep 2; echo -e "${tests[i]}") | make qemu-nox CPUS=1 > /dev/null &
