@@ -19,13 +19,14 @@
   - [Manejo básico de qemu](#manejo-básico-de-qemu)
 - [Parte I: Estudiando el planificador de xv6](#parte-i-estudiando-el-planificador-de-xv6)
   - [Pregunta 1](#pregunta-1)
-    - [Respuesta 1a](#respuesta-1a)
+    - [Respuesta 1](#respuesta-1)
   - [Pregunta 2](#pregunta-2)
     - [Respuesta 2a](#respuesta-2a)
     - [Respuesta 2b](#respuesta-2b)
 - [Parte II: Cómo el planificador afecta a los procesos](#parte-ii-cómo-el-planificador-afecta-a-los-procesos)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
-  - [MLFQ regla 3: rastreo de prioridad](#mlfq-regla-3-rastreo-de-prioridad)
+  - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
+  - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
 - [Puntos estrellas](#puntos-estrellas)
 
@@ -72,7 +73,8 @@ Y para matarlo: `kill pid`
 a. ¿Qué política utiliza xv6 para elegir el próximo proceso a correr?
 
 > Pista: xv6 nunca sale de la función scheduler por medios "normales".
-### Respuesta 
+
+### Respuesta 1
 La política que utiliza el xv6 es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado llamado **quantum**.
 
 ```c
@@ -117,7 +119,9 @@ b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 ### Respuesta 2a
 
-Cada vez que hay un timer interrupt el proceso que esta corriendo le entrega el control al kernel, lo que quiere decir que el quantum dura el mismo tiempo que existe entre timer interrupts, en el archivo lapic.c se indica que el timer cuenta 10000000 ticks para hacer un timer interrupt, estos ticks dependen de la velocidad del procesador. Ejemplo: En un procesador con una velocidad de 900MHz se producen 900 millones de ticks por segundo, lo que quiere decir que produce 10000000 de ticks en aproximadamente 0,0111 segundos que es una centésima de segundo.
+Cada vez que hay un timer interrupt, el proceso que está corriendo le entrega el control al kernel, lo que quiere decir que el quantum dura el mismo tiempo que existe entre timer interrupts. En el archivo `lapic.c` se indica que el timer cuenta `10000000` ticks para hacer un timer interrupt, estos ticks dependen de la velocidad del procesador.
+
+Ejemplo: En un procesador con una velocidad de `900MHz` se producen 900 millones de ticks por segundo, lo que quiere decir que produce `10000000` de ticks en aproximadamente 0,0111 segundos que es una centésima de segundo.
 
 En el archivo `lapic.c`:
 ```c
@@ -175,7 +179,7 @@ Habiendo visto las propiedades del planificador existente, reemplazarlo con un p
 
 1. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
 
-## MLFQ regla 3: rastreo de prioridad
+## MLFQ regla 3: rastreo de prioridad y asignación máxima
 
 * El valor **máximo de la prioridad** es el valor `0`,
 * y el valor `NPRIO` es la **prioridad mínima**.
@@ -194,7 +198,9 @@ Este define el interrupt llamado periodicamente por el hardware que usa el sched
 
 * `trap.c`: este implementa todas las traps, entre ellas las **syscalls** (con la función de su mismo nombre, `syscall()`) y los **interrupts del timer** (con la función `yield()`).
 
-Donde el descenso de prioridad ocurre en el `yield()`
+## MLFQ regla 4: descenso y ascenso de prioridad
+
+Donde el **descenso de prioridad** ocurre en el `yield()`
 ```c
 // Force process to give up CPU on clock tick.
 // If interrupts were on while locks held, would need to check nlock.
@@ -203,7 +209,8 @@ if(myproc() && myproc()->state == RUNNING &&
   yield();
 ```
 
-Y los ascensos de prioridad ocurren en el `syscall()`
+Y el **ascenso de prioridad** ocurre en el `sleep()` ya que es donde se cambia de estado de `RUNNING` a `SLEEPING` y esto indica que el proceso pasa a estar **bloqueado**, como lo indica la regla 4.
+
 
 # Parte IV: Implementando MLFQ
 

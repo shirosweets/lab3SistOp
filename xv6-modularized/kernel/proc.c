@@ -443,6 +443,9 @@ sleep(void *chan, struct spinlock *lk)
   p->chan = chan;
   p->state = SLEEPING;
 
+  // Asciende la prioridad del scheduler
+  p->priority -= (p->priority == 0) ? 0 : 1;
+
   sched();
 
   // Tidy up.
@@ -520,6 +523,8 @@ procdump(void)
   char *state;
   uint pc[10];
 
+  cprintf("\nPID | STATE | NAME | PRIORITY\n");
+
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
@@ -527,7 +532,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("%d %s %s %d", p->pid, state, p->name, p->priority);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
