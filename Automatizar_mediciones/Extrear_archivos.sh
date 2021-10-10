@@ -20,6 +20,7 @@ archivos=(
   "2cpu2io_iobench2.txt"
 )
 
+# Ejecutar desde carpeta xv-modularized y después de ejecutar AutoMed.sh (sin borrar fs.img en el medio)
 for i in {0..17}; do
   (sleep 1; echo "cat ${archivos[i]}") | make qemu-nox CPUS=1 | tail --lines=+14 | head --bytes=-2 > "${archivos[i]}" &
     # El archivo en si empieza siempre en la linea 15
