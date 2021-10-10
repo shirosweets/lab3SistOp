@@ -34,10 +34,11 @@ archivos (cpu, io) =
   ]
 
 
-
+-- Comandos de todos los test
 comandos_test :: [String]
 comandos_test = comandos <$> tests
 
+-- Todos los archivos generados por los test
 archivos_test :: [String]
 archivos_test = tests >>= archivos
 
