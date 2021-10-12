@@ -401,7 +401,7 @@ yield(void)
   acquire(&ptable.lock);  //DOC: yieldlock
 
   // Desciende la prioridad del scheduler
-  myproc()->priority += (myproc()->priority == NPRIO) ? 0 : 1;
+  myproc()->priority += (myproc()->priority == NPRIO-1) ? 0 : 1;
 
   myproc()->state = RUNNABLE;
   sched();
