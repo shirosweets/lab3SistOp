@@ -25,6 +25,9 @@
     - [Respuesta 2a](#respuesta-2a)
     - [Respuesta 2b](#respuesta-2b)
 - [Parte II: Cómo el planificador afecta a los procesos](#parte-ii-cómo-el-planificador-afecta-a-los-procesos)
+    - [`AutoMed.sh`](#automedsh)
+    - [`Extrear_archivos.sh`](#extrear_archivossh)
+  - [Automatizado de testeos](#automatizado-de-testeos)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
   - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
   - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
@@ -169,7 +172,7 @@ Explicación iobench y cpubench en el informe
 
 ### `Extrear_archivos.sh`
 
- 
+
 
 ## Automatizado de testeos
 
@@ -227,7 +230,7 @@ Y el **ascenso de prioridad** ocurre en el `sleep()` ya que es donde se cambia d
 Finalmente implementar la planificación propiamente dicha para que nuestro xv6 utilice MLFQ.
 
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
-   
+
    * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
    * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en round-robin por el quantum determinado.
 
@@ -239,12 +242,12 @@ Finalmente implementar la planificación propiamente dicha para que nuestro xv6 
 
 ## MLFQ regla 1: correr el proceso de mayor prioridad
 
-Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de procesos de manera que se ejecutaba cada proceso en estado *runnable* durante un quantum. Para poder ejecutar el proceso con la mayor prioridad se cambio para colocar un ciclo adicional en el que se compara el proceso seleccionado con el resto de los procesos en la tabla, de manera tal que se almacena en una variable el proceso de mayor prioridad, si el proceso seleccionado inicialmente es el de mayor prioridad en la tabla, entonces se corre ese proceso, en cambio si se encontro un proceso de mayor prioridad, entonces se seguira recorriendo la tabla hasta encontrar el proceso con mayor prioridad para ejecutar. 
+Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de procesos de manera que se ejecutaba cada proceso en estado *runnable* durante un quantum. Para poder ejecutar el proceso con la mayor prioridad se cambio para colocar un ciclo adicional en el que se compara el proceso seleccionado con el resto de los procesos en la tabla, de manera tal que se almacena en una variable el proceso de mayor prioridad, si el proceso seleccionado inicialmente es el de mayor prioridad en la tabla, entonces se corre ese proceso, en cambio si se encontro un proceso de mayor prioridad, entonces se seguirá recorriendo la tabla hasta encontrar el proceso con mayor prioridad para ejecutar.
 
 # Puntos estrellas
 
 - Del planificador:
-  
+
   1. [ ] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
   2. [ ] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum.
   3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo busy waiting. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción hlt.
@@ -252,7 +255,7 @@ Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de pro
   5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de (1), ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
-  
+
   - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ---
