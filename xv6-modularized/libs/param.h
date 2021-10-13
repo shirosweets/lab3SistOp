@@ -1,4 +1,5 @@
 #define NPROC        64  // Maximum number of processes
+//#define NQUANTUM     
 #define NPRIO         3  // Total levels of scheduler priority
 #define KSTACKSIZE 4096  // Size of per-process kernel stack
 #define NCPU          8  // Maximum number of CPUs

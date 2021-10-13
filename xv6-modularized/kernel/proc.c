@@ -356,6 +356,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      p->ticks_running = 0;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
