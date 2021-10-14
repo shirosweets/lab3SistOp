@@ -26,13 +26,14 @@
     - [Respuesta 2b](#respuesta-2b)
 - [Parte II: Cómo el planificador afecta a los procesos](#parte-ii-cómo-el-planificador-afecta-a-los-procesos)
     - [`AutoMed.sh`](#automedsh)
-    - [`Extrear_archivos.sh`](#extrear_archivossh)
+    - [`Extraer_archivos.sh`](#extraer_archivossh)
   - [Automatizado de testeos](#automatizado-de-testeos)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
   - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
   - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
   - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
+  - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
 - [Puntos estrellas](#puntos-estrellas)
 
 ---
@@ -170,7 +171,7 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
 Explicación iobench y cpubench en el informe
 
-### `Extrear_archivos.sh`
+### `Extraer_archivos.sh`
 
 
 
@@ -242,17 +243,23 @@ Finalmente implementar la planificación propiamente dicha para que nuestro xv6 
 
 ## MLFQ regla 1: correr el proceso de mayor prioridad
 
-Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de procesos de manera que se ejecutaba cada proceso en estado *runnable* durante un quantum. Para poder ejecutar el proceso con la mayor prioridad se cambio para colocar un ciclo adicional en el que se compara el proceso seleccionado con el resto de los procesos en la tabla, de manera tal que se almacena en una variable el proceso de mayor prioridad, si el proceso seleccionado inicialmente es el de mayor prioridad en la tabla, entonces se corre ese proceso, en cambio si se encontro un proceso de mayor prioridad, entonces se seguirá recorriendo la tabla hasta encontrar el proceso con mayor prioridad para ejecutar.
+Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de procesos de manera que se ejecutaba cada proceso en estado *runnable* durante un quantum. Para poder ejecutar el proceso con la mayor prioridad se cambió para colocar un ciclo adicional en el que se compara el proceso seleccionado con el resto de los procesos en la tabla, de manera tal que se almacena en una variable el proceso de mayor prioridad, si el proceso seleccionado inicialmente es el de mayor prioridad en la tabla, entonces se corre ese proceso, en cambio si se encontro un proceso de mayor prioridad, entonces se seguirá recorriendo la tabla hasta encontrar el proceso con mayor prioridad para ejecutar.
+
+## MLFQ regla 2: round-robin para procesos de misma prioridad
+
+
+### Respuesta 3
+Sí, se puede producir `starvation` en el nuevo planificador porque si hay un proceso largo `IO bound` o si hay varios procesos IO bound, con la política de ascensión que se implementó cada vez que se bloquea un proceso se le sube la prioridad, es decir que un proceso que devuelva el control al kernel antes de que termine el quantum ya que se bloquea siempre se va a mantener en la prioridad más alta, por lo que los procesos que esten en la prioridad más baja nunca tienen oportunidad de correr.
 
 # Puntos estrellas
 
 - Del planificador:
 
   1. [ ] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
-  2. [ ] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum.
-  3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo busy waiting. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción hlt.
-  4. [ ] (Difícil) Cuando xv6 corre en una máquina virtual con 2 procesadores, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
-  5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de (1), ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
+  2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum.
+  3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
+  4. [ ] (Difícil) Cuando xv6 corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
+  5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
 

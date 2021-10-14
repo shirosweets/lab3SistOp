@@ -14,9 +14,16 @@
   - [x] Implementación 1.
     - [x] Averigüar cómo resetear el clock del quantum.
   - [x] Implementación 2.
-- [ ] Parte 4 (Iván y Tiffany)
-  - [ ] Implementación 1.
-    - [ ] Regla 1.
-    - [ ] Regla 2.
+- [x] Parte 4 (Iván y Tiffany)
+  - [x] Implementación 1.
+    - [x] Regla 1.
+    - [x] Regla 2.
   - [ ] Medición parte 4. (Todos)
   - [ ] Pregunta 3.
+
+- [ ] Puntos estrellas
+  - [ ] (*) Regla 5 de MLFQ de OSTEP: Priority boost.
+  - [x] (**) Distintos niveles de prioridad tengan distintas longitudes de quantum. (Todos)
+  - [ ] (***) Dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
+  - [ ] (****) [Difícil] Multi-core.
+  - [ ] (****) [Muy difícil] Implementar `tickless kernel`.
