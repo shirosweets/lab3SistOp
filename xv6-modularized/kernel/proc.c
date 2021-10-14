@@ -10,6 +10,10 @@
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
+  // First elements of the scheduling queue of each priority
+  struct proc *queue_first[NPRIO];
+  // Last elements of the scheduling queue of each priority
+  struct proc *queue_last[NPRIO];
 } ptable;
 
 static struct proc *initproc;
@@ -19,6 +23,70 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+
+// queue management
+
+// Set first and last proc to NULL for each queue.
+void
+init_queue(void)
+{
+  for(uint i = 0; i < NPRIO; i++){
+    ptable.queue_first[i] = 0;
+    ptable.queue_last[i] = 0;
+  }
+}
+
+// Add the processes to the end of their priority queue.
+// If the queue is empty the process to be added will be
+// set as first and last.
+void
+enqueue(struct proc *p)
+{
+  if(ptable.queue_last[p->priority] != 0)
+    ptable.queue_last[p->priority]->next_proc = p;
+  else
+    ptable.queue_first[p->priority] = p;
+
+  p->next_proc = 0;
+  ptable.queue_last[p->priority] = p;
+}
+
+// Moves 1st process to the end of it's queue.
+// Takes as argument the first process of the queue
+void
+pop_and_enqueue(struct proc *p)
+{
+  ptable.queue_first[p->priority] = p->next_proc;
+  enqueue(p);
+}
+
+// Removes a process from it's queue
+// It is faster for the first elements of the queue
+void
+dequeue(struct proc *p)
+{
+  if(ptable.queue_first[p->priority] == p){
+    ptable.queue_first[p->priority] = p->next_proc;
+  }
+  else {
+    struct proc *previous_p = ptable.queue_first[p->priority];
+    while(previous_p->next_proc != p){
+      previous_p = previous_p->next_proc;
+    }
+    previous_p->next_proc = p->next_proc;
+  }
+}
+
+// Move the process to another queue.
+// Called after yield when the priority is decreased
+// and priority boost where the priority is increased.
+void
+change_priority_and_queue(struct proc *p, uint q)
+{
+  dequeue(p);
+  p->priority = q;
+  enqueue(p);
+}
 
 void
 pinit(void)
@@ -84,6 +152,8 @@ allocproc(void)
       p->pid = nextpid++;
 
       p->priority = 0;
+      // Add to queue of priority 0
+      enqueue(p);
 
       release(&ptable.lock);
 
@@ -262,6 +332,9 @@ exit(void)
     }
   }
 
+  // Remove process from the queue
+  dequeue(p);
+
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
   sched();
@@ -329,6 +402,10 @@ scheduler(void)
   c->proc = 0;
   struct proc *process_to_run = 0;
 
+  acquire(&ptable.lock); // FIXME 1: tener en cuenta bien el lock
+  init_queue();  // FIXME Por ahí no funcione bien para multi-core
+  release(&ptable.lock);  // FIXME 1: tener en cuenta bien el lock
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -360,6 +437,8 @@ scheduler(void)
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
+
+      pop_and_enqueue(p);
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
@@ -403,6 +482,9 @@ yield(void)
 
   // Desciende la prioridad del scheduler
   myproc()->priority += (myproc()->priority == NPRIO-1) ? 0 : 1;
+//  uint priority = myproc()->priority; // FIXME
+//  if(priority < NPRIO-1)
+//    change_priority_and_queue(myproc(), priority + 1);
 
   myproc()->state = RUNNABLE;
   sched();
@@ -459,6 +541,9 @@ sleep(void *chan, struct spinlock *lk)
 
   // Asciende la prioridad del scheduler
   p->priority -= (p->priority == 0) ? 0 : 1;
+
+//  if(p->priority > 0)  // FIXME
+//    change_priority_and_queue(p, p->priority - 1);
 
   sched();
 

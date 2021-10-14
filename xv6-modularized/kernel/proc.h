@@ -51,6 +51,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   uint priority;               // Current priority of scheduler
   uint ticks_running;          // Amount of ticks the process has been running for
+  struct proc *next_proc;      // Next proc in the scheduling queue
 };
 
 // Process memory is laid out contiguously, low addresses first:
