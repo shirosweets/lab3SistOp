@@ -15,6 +15,7 @@ struct {
   // Last elements of the scheduling queue of each priority
   struct proc *queue_last[NPRIO];
 } ptable;
+// Memory is initialised in 0
 
 static struct proc *initproc;
 
@@ -25,16 +26,6 @@ extern void trapret(void);
 static void wakeup1(void *chan);
 
 // queue management
-
-// Set first and last proc to NULL for each queue.
-void
-init_queue(void)
-{
-  for(uint i = 0; i < NPRIO; i++){
-    ptable.queue_first[i] = 0;
-    ptable.queue_last[i] = 0;
-  }
-}
 
 // Add the processes to the end of their priority queue.
 // If the queue is empty the process to be added will be
@@ -153,7 +144,7 @@ allocproc(void)
 
       p->priority = 0;
       // Add to queue of priority 0
-      enqueue(p);
+//      enqueue(p);
 
       release(&ptable.lock);
 
@@ -333,7 +324,7 @@ exit(void)
   }
 
   // Remove process from the queue
-  dequeue(p);
+//  dequeue(p);
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -401,10 +392,6 @@ scheduler(void)
   struct cpu *c = mycpu();
   c->proc = 0;
   struct proc *process_to_run = 0;
-
-  acquire(&ptable.lock); // FIXME 1: tener en cuenta bien el lock
-  init_queue();  // FIXME Por ahí no funcione bien para multi-core
-  release(&ptable.lock);  // FIXME 1: tener en cuenta bien el lock
 
   for(;;){
     // Enable interrupts on this processor.
