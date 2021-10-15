@@ -152,9 +152,9 @@ allocproc(void)
       p->state = EMBRYO;
       p->pid = nextpid++;
 
-      p->priority = 0;
       // Add to queue of priority 0
-//      enqueue(p);
+      p->priority = 0;
+      enqueue(p);
 
       release(&ptable.lock);
 
@@ -334,7 +334,7 @@ exit(void)
   }
 
   // Remove process from the queue
-//  dequeue(p);
+  dequeue(curproc);
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -478,10 +478,10 @@ yield(void)
   acquire(&ptable.lock);  //DOC: yieldlock
 
   // Desciende la prioridad del scheduler
-  myproc()->priority += (myproc()->priority == NPRIO-1) ? 0 : 1;
-//  uint priority = myproc()->priority; // FIXME
-//  if(priority < NPRIO-1)
-//    change_priority_and_queue(myproc(), priority + 1);
+//  myproc()->priority += (myproc()->priority == NPRIO-1) ? 0 : 1;
+  uint priority = myproc()->priority;
+  if(priority < NPRIO-1)
+    change_priority_and_queue(myproc(), priority + 1);
 
   myproc()->state = RUNNABLE;
   sched();
@@ -537,10 +537,9 @@ sleep(void *chan, struct spinlock *lk)
   p->state = SLEEPING;
 
   // Asciende la prioridad del scheduler
-  p->priority -= (p->priority == 0) ? 0 : 1;
-
-//  if(p->priority > 0)  // FIXME
-//    change_priority_and_queue(p, p->priority - 1);
+//  p->priority -= (p->priority == 0) ? 0 : 1;
+  if(p->priority > 0)
+    change_priority_and_queue(p, p->priority - 1);
 
   sched();
 
