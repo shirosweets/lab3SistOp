@@ -398,10 +398,8 @@ void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *p1;
   struct cpu *c = mycpu();
   c->proc = 0;
-  struct proc *process_to_run = 0;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -409,24 +407,28 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+
+    for(uint i = 0; i < NPRIO; i++){
+      if(ptable.queue_first[i] == 0)
+        continue;
+
+      struct proc *original_last = ptable.queue_last[i];
+      p = ptable.queue_first[i];
+
+      // Search a RUNNABLE process
+      while(p->state != RUNNABLE && p != original_last){  // FIXME
+        pop_and_enqueue(p);
+        p = ptable.queue_first[i];
+      }
+
       if(p->state != RUNNABLE)
         continue;
 
-      process_to_run = p;
-
-      for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
-        if(p1->state != RUNNABLE)
-          continue;
-
-        if(p->priority > p1->priority)
-          process_to_run = p1;
-      }
+      pop_and_enqueue(p);  // FIXME
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      p = process_to_run;
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
@@ -435,11 +437,10 @@ scheduler(void)
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
-      pop_and_enqueue(p);
-
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+      break;
     }
     release(&ptable.lock);
   }
