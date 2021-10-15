@@ -47,7 +47,13 @@ enqueue(struct proc *p)
 void
 pop_and_enqueue(struct proc *p)
 {
+  if(p != ptable.queue_first[p->priority]){
+    return;
+  }
   ptable.queue_first[p->priority] = p->next_proc;
+  if(ptable.queue_last[p->priority] == p)
+    ptable.queue_last[p->priority] = 0;
+
   enqueue(p);
 }
 
@@ -56,16 +62,20 @@ pop_and_enqueue(struct proc *p)
 void
 dequeue(struct proc *p)
 {
+  struct proc *previous_p = 0;
   if(ptable.queue_first[p->priority] == p){
     ptable.queue_first[p->priority] = p->next_proc;
   }
   else {
-    struct proc *previous_p = ptable.queue_first[p->priority];
+    previous_p = ptable.queue_first[p->priority];
     while(previous_p->next_proc != p){
       previous_p = previous_p->next_proc;
     }
     previous_p->next_proc = p->next_proc;
   }
+
+  if(ptable.queue_last[p->priority] == p)
+    ptable.queue_last[p->priority] = previous_p;
 }
 
 // Move the process to another queue.
