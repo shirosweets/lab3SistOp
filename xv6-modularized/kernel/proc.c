@@ -422,14 +422,14 @@ priority_boost(void)
   uint i;
   uint first_non_empty_queue = 0;
   acquire(&ptable.lock);
-  
+
   // Set priorities to 0
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     p->priority = 0;
   }
 
   // Since all the processes have the same priority we
-  // concatenate the processes , using the first and last process 
+  // concatenate the processes queues, using the first and last process 
   // of each non-empty queue
 
   while(first_non_empty_queue < NPRIO && ptable.queue_first[first_non_empty_queue] == 0){

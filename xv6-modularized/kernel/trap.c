@@ -52,7 +52,7 @@ trap(struct trapframe *tf)
       acquire(&tickslock);
       ticks++;
       wakeup(&ticks);
-      if(ticks % PRIORITYBOOST == 0)
+      if(ticks % BOOSTTIMER == 0)
         priority_boost();
       release(&tickslock);
     }
