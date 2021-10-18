@@ -27,9 +27,10 @@ static void wakeup1(void *chan);
 
 // queue management
 
-// Add the processes to the end of their priority queue.
+// Adds the process to the end of it's priority queue and sets it's state to RUNNABLE
 // If the queue is empty the process to be added will be
 // set as first and last.
+// The ptable.lock must be acquired
 void
 enqueue(struct proc *p)
 {
@@ -40,25 +41,12 @@ enqueue(struct proc *p)
 
   p->next_proc = 0;
   ptable.queue_last[p->priority] = p;
-}
-
-// Moves 1st process to the end of it's queue.
-// Takes as argument the first process of the queue
-void
-pop_and_enqueue(struct proc *p)
-{
-  if(p != ptable.queue_first[p->priority]){
-    return;
-  }
-  ptable.queue_first[p->priority] = p->next_proc;
-  if(ptable.queue_last[p->priority] == p)
-    ptable.queue_last[p->priority] = 0;
-
-  enqueue(p);
+  p->state = RUNNABLE;
 }
 
 // Removes a process from it's queue
 // It is faster for the first elements of the queue
+// The ptable.lock mast be acquired
 void
 dequeue(struct proc *p)
 {
@@ -77,17 +65,6 @@ dequeue(struct proc *p)
 
   if(ptable.queue_last[p->priority] == p)
     ptable.queue_last[p->priority] = previous_p;
-}
-
-// Move the process to another queue.
-// Called after yield when the priority is decreased
-// and priority boost where the priority is increased.
-void
-change_priority_and_queue(struct proc *p, uint q)
-{
-  dequeue(p);
-  p->priority = q;
-  enqueue(p);
 }
 
 void
@@ -153,9 +130,8 @@ allocproc(void)
       p->state = EMBRYO;
       p->pid = nextpid++;
 
-      // Add to queue of priority 0
+      // Set maximum priority
       p->priority = 0;
-      enqueue(p);
 
       release(&ptable.lock);
 
@@ -221,7 +197,8 @@ userinit(void)
   // because the assignment might not be atomic.
   acquire(&ptable.lock);
 
-  p->state = RUNNABLE;
+  // Proces is ready for runing
+  enqueue(p);
 
   release(&ptable.lock);
 }
@@ -287,7 +264,8 @@ fork(void)
 
   acquire(&ptable.lock);
 
-  np->state = RUNNABLE;
+  // Proces is ready for runing
+  enqueue(np);
 
   release(&ptable.lock);
 
@@ -333,9 +311,7 @@ exit(void)
         wakeup1(initproc);
     }
   }
-
-  // Remove process from the queue
-  dequeue(curproc);
+  
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -413,26 +389,15 @@ scheduler(void)
       if(ptable.queue_first[i] == 0)
         continue;
 
-      struct proc *original_last = ptable.queue_last[i];
       p = ptable.queue_first[i];
-
-      // Search a RUNNABLE process
-      while(p->state != RUNNABLE && p != original_last){
-        pop_and_enqueue(p);
-        p = ptable.queue_first[i];
-      }
-
-      // No RUNNABLE process was found in these queue
-      if(p->state != RUNNABLE)
-        continue;
-
-      pop_and_enqueue(p);
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
+
       c->proc = p;
       switchuvm(p);
+      dequeue(p);
       p->state = RUNNING;
 
       swtch(&(c->scheduler), p->context);
@@ -479,14 +444,12 @@ yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
 
-  // Desciende la prioridad del scheduler
-//  myproc()->priority += (myproc()->priority == NPRIO-1) ? 0 : 1;
-  uint priority = myproc()->priority;
-  if(priority < NPRIO-1)
-    change_priority_and_queue(myproc(), priority + 1);
+  // Lowers the process' priority and restarts it's quantum
+  myproc()->priority += (myproc()->priority == NPRIO-1) ? 0 : 1;
   myproc()->ticks_running = 0;
+  // Put in his queue the process for the scheduler to run it
+  enqueue(myproc());
 
-  myproc()->state = RUNNABLE;
   sched();
   release(&ptable.lock);
 }
@@ -540,9 +503,7 @@ sleep(void *chan, struct spinlock *lk)
   p->state = SLEEPING;
 
   // Asciende la prioridad del scheduler
-//  p->priority -= (p->priority == 0) ? 0 : 1;
-  if(p->priority > 0)
-    change_priority_and_queue(p, p->priority - 1);
+  p->priority -= (p->priority == 0) ? 0 : 1;
 
   sched();
 
@@ -566,7 +527,8 @@ wakeup1(void *chan)
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan)
-      p->state = RUNNABLE;
+      // set the process ready for runing
+      enqueue(p);
 }
 
 // Wake up all processes sleeping on chan.
@@ -592,7 +554,7 @@ kill(int pid)
       p->killed = 1;
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING)
-        p->state = RUNNABLE;
+        enqueue(p);
       release(&ptable.lock);
       return 0;
     }
