@@ -243,12 +243,23 @@ Finalmente implementar la planificación propiamente dicha para que nuestro xv6 
 
 ## MLFQ regla 1: correr el proceso de mayor prioridad
 
-Inicialmente en `proc.c` en la función `scheduler` se recorría la tabla de procesos de manera que se ejecutaba cada proceso en estado *runnable* durante un quantum. Para poder ejecutar el proceso con la mayor prioridad se cambió para colocar un ciclo adicional en el que se compara el proceso seleccionado con el resto de los procesos en la tabla, de manera tal que se almacena en una variable el proceso de mayor prioridad, si el proceso seleccionado inicialmente es el de mayor prioridad en la tabla, entonces se corre ese proceso, en cambio si se encontro un proceso de mayor prioridad, entonces se seguirá recorriendo la tabla hasta encontrar el proceso con mayor prioridad para ejecutar.
+Para poder facilitar el manejo de las prioridades dicidimos usar colas, para hacer esto cambiamos el `struct ptable` del archivo `proc.c` que tiene la estructura de la tabla de procesos, para que contenga dos arreglos de punteros a procesos, `queue_first` que contiene los primeros procesos en la cola de cada prioridad, y `queue_last` que contiene los últimos procesos de la cola.
+
+Al inicializarse xv6 la memoria se inicializa en 0, por lo que las colas se inicializan en 0, luego al inicializarse un proceso en `userinit` se le asigna la prioridad más alta y se encola. En el scheduler se realiza un ciclo para encontrar el proceso de la prioridad más alta revisando el primer proceso de la cola de cada prioridad, dado que las colas solo tienen procesos que están en estado `RUNNABLE`, con ver si el primer elemento de la cola existe es suficiente para saber si hay procesos de dicha prioridad por correr. El ciclo comienza revisando la cola de prioridad mas baja (prioridad 0), por lo que siempre se va a correr el proceso de mayor prioridad.
+
+Para asegurarnos de que en las colas solo haya procesos en estado `RUNNABLE` luego de correr cada proceso se saca de su cola, de esta forma si el proceso pasa a cualquier otro estado sólo se vuelve a encolar cuando pasa nuevamente a estado `RUNNABLE`, como por ejemplo en `wakeup` donde el proceso pasa de estado `SLEEP` a `RUNNABLE`.
+
+Lo más importante de la implementación con colas es que mejora ligeramente el rendimiento, ya que a diferencia del scheduler original de xv6 no hay que recorrer la tabla completa de procesos para encontrar uno para ejecutar.
 
 ## MLFQ regla 2: round-robin para procesos de misma prioridad
 
+Con la implementación que tenemos siempre se va a correr el proceso de prioridad más alta que este en estado `RUNNABLE`, luego de ejecutarse este proceso se van a revisar las colas nuevamente para buscar otro proceso por correr, en caso de que no haya un proceso de prioridad más alta que el que se ejecutó anteriormente, se seguiran ejecutando los procesos de la misma cola de prioridad de el proceso anterior, de esta forma los procesos de la misma prioridad se corren en round-robin por el quantum establecido.
+
+Es importante observar que en esta implementación siempre que un proceso consuma su quantum y ejecute `yield()` para ceder el CPU, se baja la prioridad del proceso.
+
 
 ### Respuesta 3
+
 Sí, se puede producir `starvation` en el nuevo planificador porque si hay un proceso largo `IO bound` o si hay varios procesos IO bound, con la política de ascensión que se implementó cada vez que se bloquea un proceso se le sube la prioridad, es decir que un proceso que devuelva el control al kernel antes de que termine el quantum ya que se bloquea siempre se va a mantener en la prioridad más alta, por lo que los procesos que esten en la prioridad más baja nunca tienen oportunidad de correr.
 
 # Puntos estrellas
