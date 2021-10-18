@@ -35,6 +35,8 @@
   - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
   - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
 - [Puntos estrellas](#puntos-estrellas)
+  - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
+  - [Priority Boost de OSTEP](#priority-boost-de-ostep)
 
 ---
 
@@ -124,10 +126,10 @@ Referencias:
 ## Pregunta 2
 
 2. Analizar el código que interrumpe a un proceso al final de su quantum y responda:
+  
+  a. ¿Cuánto dura un quantum en xv6?
 
-   a. ¿Cuánto dura un quantum en xv6?
-   
-   b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
+  b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 > Pista: Se puede empezar a buscar desde la system call uptime .
 
@@ -249,7 +251,7 @@ Finalmente implementar la planificación propiamente dicha para que nuestro xv6 
 
 ## MLFQ regla 1: correr el proceso de mayor prioridad
 
-Para poder facilitar el manejo de las prioridades dicidimos usar colas, para hacer esto cambiamos el `struct ptable` del archivo `proc.c` que tiene la estructura de la tabla de procesos, para que contenga dos arreglos de punteros a procesos, `queue_first` que contiene los primeros procesos en la cola de cada prioridad, y `queue_last` que contiene los últimos procesos de la cola.
+Para poder facilitar el manejo de las prioridades dicidimos usar colas, para hacer esto cambiamos el `struct ptable` del archivo `proc.c` que tiene la estructura de la tabla de procesos, para que contenga dos arreglos de punteros a procesos, `queue_first` que contiene los primeros procesos en la cola de cada prioridad, y `queue_last` que contiene los últimos procesos de la cola. También modificamos el `struct proc` que contiene la estructura de los procesos para añadir un puntero `next_proc` el cual va a apuntar al siguiente proceso en la cola.
 
 Al inicializarse xv6 la memoria se inicializa en 0, por lo que las colas se inicializan en 0, luego al inicializarse un proceso en `userinit` se le asigna la prioridad más alta y se encola. En el scheduler se realiza un ciclo para encontrar el proceso de la prioridad más alta revisando el primer proceso de la cola de cada prioridad, dado que las colas solo tienen procesos que están en estado `RUNNABLE`, con ver si el primer elemento de la cola existe es suficiente para saber si hay procesos de dicha prioridad por correr. El ciclo comienza revisando la cola de prioridad mas baja (prioridad 0), por lo que siempre se va a correr el proceso de mayor prioridad.
 
@@ -272,7 +274,7 @@ Sí, se puede producir `starvation` en el nuevo planificador porque si hay un pr
 
 - Del planificador:
 
-  1. [ ] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
+  1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
   2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum.
   3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
   4. [ ] (Difícil) Cuando xv6 corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
@@ -281,6 +283,22 @@ Sí, se puede producir `starvation` en el nuevo planificador porque si hay un pr
 - De las herramientas de medición:
 
   - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
+
+## Quantum distinto por prioridad
+----
+
+
+
+## Priority Boost de OSTEP
+---
+
+En este punto se cambio la implementación anterior del priority boost en el que se asciende la prioridad del proceso cada vez que este se bloquea, a una implementación mas parecida a la del libro OSTEP en la que se asciende la prioridad de todos los procesos a la prioridad más alta cada cierta cantidad de tiempo.
+
+Para hacer esto creamos una función `priority_boost` en el archivo `proc.c` en el cual se recorren todos los procesos en la tabla de procesos y se coloca la prioridad de cada uno en 0 (que es la prioridad más alta). Decidimos definir una constante `BOOSTTIMER` que se encuentra definida en el archivo `param.h` para establecer la cantidad de tiempo que tiene que pasar entre cada priority boost.
+
+Cada vez que se realiza un timer interrupt en xv6 se aumenta el contador de ticks que son los que llevan la cuenta del tiempo que ha pasado, por eso decidimos que en el archivo `trap.c`, en donde se aumenta la variable ticks , se chequee si ya paso la cantidad de tiempo definido por la constante `BOOSTTIMER`, de esta forma si `ticks % BOOSTTIMER == 0` se hace la llamada a `priority_boost` para ascender la prioridad de los procesos.
+
+Debido a la implementación con colas que manejamos luego de ascender la prioridad de los procesos es importante actualizar el primer y último elemento de cada cola de prioridad, en este caso lo que hacemos es concatenar los procesos de manera que el último proceso de cada cola apunte al primer elemento de la siguiente cola no vacía.
 
 ---
 
