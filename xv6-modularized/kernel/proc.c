@@ -412,6 +412,54 @@ scheduler(void)
   }
 }
 
+// Sets the priority of every process to 0
+// It's called during a timer interrupt
+void 
+priority_boost(void)
+{
+  struct proc *p;
+  struct proc *last;
+  uint i;
+  uint first_non_empty_queue = 0;
+  acquire(&ptable.lock);
+  
+  // Set priorities to 0
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    p->priority = 0;
+  }
+
+  // Since all the processes have the same priority we
+  // concatenate the processes , using the first and last process 
+  // of each non-empty queue
+
+  while(first_non_empty_queue < NPRIO && ptable.queue_first[first_non_empty_queue] == 0){
+    first_non_empty_queue++;
+  }
+  if(first_non_empty_queue < NPRIO){
+    // There are non empty queues
+
+    ptable.queue_first[0] = ptable.queue_first[first_non_empty_queue];
+    last = ptable.queue_last[first_non_empty_queue];
+
+    for(i = first_non_empty_queue+1; i < NPRIO; i++){
+      if(ptable.queue_first[i] != 0){
+        last->next_proc = ptable.queue_first[i];
+        last = ptable.queue_last[i];
+      }
+    }
+
+    ptable.queue_last[0] = last;
+  }
+
+  // Set to NULL pointers to the other queues
+  for(i = 1; i < NPRIO; i++){
+    ptable.queue_first[i] = 0;
+    ptable.queue_last[i] = 0;
+  }
+
+  release(&ptable.lock);
+}
+
 // Enter scheduler.  Must hold only ptable.lock
 // and have changed proc->state. Saves and restores
 // intena because intena is a property of this
@@ -503,7 +551,7 @@ sleep(void *chan, struct spinlock *lk)
   p->state = SLEEPING;
 
   // Asciende la prioridad del scheduler
-  p->priority -= (p->priority == 0) ? 0 : 1;
+  // p->priority -= (p->priority == 0) ? 0 : 1;
 
   sched();
 
