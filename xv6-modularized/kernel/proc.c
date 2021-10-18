@@ -434,7 +434,6 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      p->ticks_running = 0;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -485,6 +484,7 @@ yield(void)
   uint priority = myproc()->priority;
   if(priority < NPRIO-1)
     change_priority_and_queue(myproc(), priority + 1);
+  myproc()->ticks_running = 0;
 
   myproc()->state = RUNNABLE;
   sched();
