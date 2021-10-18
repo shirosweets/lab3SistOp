@@ -124,7 +124,9 @@ Referencias:
 ## Pregunta 2
 
 2. Analizar el código que interrumpe a un proceso al final de su quantum y responda:
+
    a. ¿Cuánto dura un quantum en xv6?
+   
    b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 > Pista: Se puede empezar a buscar desde la system call uptime .
@@ -184,14 +186,18 @@ Explicación iobench y cpubench en el informe
 Habiendo visto las propiedades del planificador existente, reemplazarlo con un planificador MLFQ de tres niveles. Esto se debe hacer de manera gradual, primero rastrear la prioridad de los procesos, sin que esto afecte la planificación.
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala actualizada según el comportamiento del proceso:
+
 * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
+
 * MLFQ regla 4:
+
   * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
+
   * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
 
 > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
-1. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
+2. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
 
 ## MLFQ regla 3: rastreo de prioridad y asignación máxima
 
