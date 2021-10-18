@@ -67,6 +67,7 @@ dequeue(struct proc *p)
     ptable.queue_first[p->priority] = p->next_proc;
   }
   else {
+    // Search the process that points to p
     previous_p = ptable.queue_first[p->priority];
     while(previous_p->next_proc != p){
       previous_p = previous_p->next_proc;
@@ -416,15 +417,16 @@ scheduler(void)
       p = ptable.queue_first[i];
 
       // Search a RUNNABLE process
-      while(p->state != RUNNABLE && p != original_last){  // FIXME
+      while(p->state != RUNNABLE && p != original_last){
         pop_and_enqueue(p);
         p = ptable.queue_first[i];
       }
 
+      // No RUNNABLE process was found in these queue
       if(p->state != RUNNABLE)
         continue;
 
-      pop_and_enqueue(p);  // FIXME
+      pop_and_enqueue(p);
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
