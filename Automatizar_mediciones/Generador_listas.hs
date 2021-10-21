@@ -1,3 +1,5 @@
+import Data.List (intercalate)
+
 -- Funciones de fmt
 
 (+|) :: Show a => String -> a -> String
@@ -15,21 +17,21 @@ tests = [(cpu, io) | cpu <- [0..2], io <- [0..2]]
 
 -- Comando para pasarle a xv6 para ese caso de test
 comandos :: (Word, Word) -> String
-comandos (cpu, io) = unlines $
-  ["cpubench > "+| cpu |+"cpu"+| io |+"io_cpubench"+| ncpu |+".txt &"
+comandos (cpu, io) = intercalate " ; " $
+  ["cpubench > "+| cpu |+"cpu"+| io |+"io_cpu"+| ncpu |+" &"
     | ncpu <- [1..cpu]
   ]
-  ++ ["iobench > "+| cpu |+"cpu"+| io |+"io_iobench"+| nio |+".txt &"
+  ++ ["iobench > "+| cpu |+"cpu"+| io |+"io_io"+| nio |+" &"
     | nio <- [1..io]
   ]
 
 -- Archivos generados dentro de xv6 en este caso del test
 archivos :: (Word, Word) -> [String]
 archivos (cpu, io) =
-  [""+| cpu |+"cpu"+| io |+"io_cpubench"+| ncpu |+".txt"
+  [""+| cpu |+"cpu"+| io |+"io_cpu"+| ncpu
     | ncpu <- [1..cpu]
   ]
-  ++ [""+| cpu |+"cpu"+| io |+"io_iobench"+| nio |+".txt"
+  ++ [""+| cpu |+"cpu"+| io |+"io_io"+| nio
     | nio <- [1..io]
   ]
 
