@@ -47,9 +47,9 @@ main(int argc, char *argv[])
     int end = uptime();
     int elapsed = end - start;
     if (elapsed >= MINTICKS) {
-      printf(1, "%d: %d KFLOPT\n", pid, (int) ((ops / 1000) / elapsed));
+      printf(1, "%d: FLO: %d, ticks: %d\n", pid, ops, elapsed);
 
-      start = end;
+      start = uptime();
       ops = 0;
     }
 

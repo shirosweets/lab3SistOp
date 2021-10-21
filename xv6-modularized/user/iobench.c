@@ -29,9 +29,9 @@ main(int argc, char *argv[])
     int end = uptime();
     int elapsed = end - start;
     if (elapsed >= MINTICKS) {
-      printf(1, "\t\t\t\t\t%d: %d IOP%dT\n", pid, (int) (ops * MINTICKS / elapsed), MINTICKS);
+      printf(1, "\t\t\t\t\t%d: IO: %d, ticks: %d\n", pid, ops, elapsed);
 
-      start = end;
+      start = uptime();
       ops = 0;
     }
 
