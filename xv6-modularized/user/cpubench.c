@@ -47,16 +47,16 @@ main(int argc, char *argv[])
     int end = uptime();
     int elapsed = end - start;
     if (elapsed >= MINTICKS) {
-        printf(1, "%d: %d MFLOPT\n", pid, (int) ((ops / 1000) / elapsed));
+      printf(1, "%d: FLO: %d, ticks: %d\n", pid, ops, elapsed);
 
-        start = end;
-        ops = 0;
+      start = uptime();
+      ops = 0;
     }
 
     for(int i = 0; i < TIMES; ++i) {
-        matmul(beta);
-        beta = -beta;
-        ops += 3 * N * N * N;
+      matmul(beta);
+      beta = -beta;
+      ops += 3 * N * N * N;
     }
   }
 
