@@ -1,4 +1,3 @@
-import Data.List (intercalate)
 
 -- Funciones de fmt
 
@@ -17,7 +16,7 @@ tests = [(cpu, io) | cpu <- [0..2], io <- [0..2]]
 
 -- Comando para pasarle a xv6 para ese caso de test
 comandos :: (Word, Word) -> String
-comandos (cpu, io) = intercalate " ; " $
+comandos (cpu, io) = unlines $
   ["cpubench > "+| cpu |+"cpu"+| io |+"io_cpu"+| ncpu |+" &"
     | ncpu <- [1..cpu]
   ]
