@@ -25,9 +25,9 @@
     - [Respuesta 2a](#respuesta-2a)
     - [Respuesta 2b](#respuesta-2b)
 - [Parte II: Cómo el planificador afecta a los procesos](#parte-ii-cómo-el-planificador-afecta-a-los-procesos)
-    - [`AutoMed.sh`](#automedsh)
-    - [`Extraer_archivos.sh`](#extraer_archivossh)
-  - [Automatizado de testeos](#automatizado-de-testeos)
+  - [`AutoMed.sh`](#automedsh)
+  - [`Extraer_archivos.sh`](#extraer_archivossh)
+    - [Automatizado de testeos](#automatizado-de-testeos)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
   - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
   - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
@@ -126,10 +126,10 @@ Referencias:
 ## Pregunta 2
 
 2. Analizar el código que interrumpe a un proceso al final de su quantum y responda:
-  
-  a. ¿Cuánto dura un quantum en xv6?
-
-  b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
+   
+   a. ¿Cuánto dura un quantum en xv6?
+   
+   b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 > Pista: Se puede empezar a buscar desde la system call uptime .
 
@@ -157,44 +157,51 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
     El tipo de planificador puede influir en cuantos recursos se le asignan a cada proceso. En particular, el planificador *round robin* que viene en xv6 ejecuta a todos los procesos la misma cantidad de tiempo, mientras que el planificador MLFQ (multi level feedback queue) ejecuta mas a algunos procesos que a otros.
 
-    Es interesante, y muy útil, saber como afecta de distinta manera a los procesos de distintos tipos. Para eso, junto con la consigna nos dieron 2 programas que miden cuanto pueden hacer de distintas cosas.
+    Es interesante y muy útil, saber como afecta de distinta manera a los procesos de distintos tipos. Para eso, junto con la consigna nos dieron 2 programas para medir cuanto podian hacer de distintas cosas.
 
-    El programa `cpubench` mide la cantidad de operaciones de punto flotante que puede hacer en una cierta cantidad de ticks del sistema operativo. En particular, mide las operaciones que puede hacer en `MINTICKS` (definido por defecto en `250`) ticks del sistema operativo, y lo imprimé en KFLOPT (kilo floating point operations per tick) (por defecto lo imprimia en MFLOPT (mega en lugar de kilo), pero es un error, ya que lo calcula en kilo), así que nosotros lo cambiamos.
+    El programa `cpubench` media la cantidad de operaciones de punto flotante que podía hacer en una cierta cantidad de ticks del sistema operativo. En particular, las operaciones en `MINTICKS` (definido por defecto en `250`) ticks del sistema operativo, y lo imprimía en KFLOPT (kilo floating point operations per tick) (por defecto ponía como unidad MFLOPT (mega en lugar de kilo), pero es un error, ya que lo calculaba en kilo).
 
-    Los ticks del sistema operativos cuentan con la llamada al sistema `uptime` y en el xv6 original son la cantidad de interrupciones por timer producidos. Esto causa que si se hace que el timer sea mas chico, las mediciones de `cpubench` den menos, incluso cuando la cantidad de tiempo fue la misma, pero, tiene la ventaja de que no depende de la velocidad del procesador, ya que por mas que cambie la velocidad a la que el procesador ejecuta las instrucciones, la cantidad de instrucciones ejecutadas entre una interrupción y la otra son las mismas.
+    Los ticks del sistema operativos se obtienen con la llamada al sistema `uptime` y son la cantidad de interrupciones por timer producidos desde el inicio del sistema. Esto causa que si se hace que el timer sea mas chico, las mediciones de `cpubench` den menos, porque obviamente en menos tiempo se hacen menos cosas, pero, tiene la ventaja de que no depende de la velocidad del procesador, ya que por mas que cambie la velocidad a la que el procesador ejecuta las instrucciones, la cantidad de instrucciones ejecutadas entre una interrupción y la otra son las mismas.
 
-    El otro programa que dieron es `iobench` que mide la cantidad de escrituras y lecturas de un archivo que puede hacer en `MINTICKS` ticks del sistema operativo, y las imprime en IOP`MINTICKS`T (input output operations per `MINTICKS` ticks). Este número se puede convertir en IOPT dividiendo por `MINTICKS`, el motivo por el cual posiblemente no lo imprima directamente en en IOPT es que el `printf` de xv6 solo puede imprimir enteros, y si se dividiera el valor en `MINTICKS` y luego se lo convirtiera en `int`, se perdería mucha precisión.
+    El otro programa que dieron es `iobench` que media la cantidad de escrituras y lecturas de un archivo que podía en `MINTICKS` ticks del sistema operativo, y las imprimía en IOP`MINTICKS`T (input output operations per `MINTICKS` ticks).
+
+    Nosotros decidimos modificar un poco estos programas, para hacer que en lugar de imprimir la cantidad de operaciones por cierta cantidad de ticks, imprima la cantidad de operaciones y la cantidad de ticks por separado, para hacer nosotros la división, y evitar la perdida de error por el redondeo de la división entera (en `iobench` habían hecho que se imprima en `MINTICKS` ticks posiblemente para evitar un poco eso, pero nos pareció mejor directamente imprimir todo).
 
     En la consigna se pide ejecutar en distintas combinaciones estos programas con el planificador por defecto y con el nuestro, para poder compararlos. Hacer eso a mano es bastante trabajo, así que nosotros decidimos intentar automatizarlo un poco.
 
-    Para automatizarlo hicimos 2 scripts en la carpeta Automatizar_mediciones, uno que se encarga de ejecutar todos los test y guardar los resultados en archivos dentro de xv6, y otro que se encargue de extraer de xv6 los archivos esos.
+    Para automatizarlo hicimos 2 scripts en la carpeta `Automatizar_mediciones`, uno que se encarga de ejecutar todos los test y guardar los resultados en archivos dentro de xv6, y otro que se encargue de extraer de xv6 los archivos esos.
 
     A continuación una explicación de como funciona cada uno de ellos:
 
 ### `AutoMed.sh`
 
-Explicación iobench y cpubench en el informe
+    Este es el script que se encarga de ejecutar los test, redirigiendo las salidas a archivos dentro de xv6.
+
+    Lo que hace es tener una lista de los comandos a ejecutar en cada test y para cada uno ejecuta xv6 durante un cierto tiempo pasandole a la entrada estándar el comando de este test.
 
 ### `Extraer_archivos.sh`
 
+    Este es el script que se encarga de extraer los archivos de xv6.
+
+    Lo que hace es tener una lista de los archivos que tiene que extraer, y para cada uno ejecuta qemu pasandole a la entrada estándar `cat nombre_del_archivo`, y redirigiendo la salida a un archivo del mismo nombre en linux, quitandole las primeras 14 lineas, que son los que se imprime hasta el `cat`, y los últimos 2 caracteres que son el `$ ` que se imprime después.
 
 
-## Automatizado de testeos
 
-    
+    Para generar los comandos que hay que ejecutar y los nombres de los archivos que hay que extraer usamos un pequeño archivo de haskell `Generador_listas.hs`, en donde `comandos_test` son los comandos y `archivos_test` los archivos.
+
+    Para usar los scripts hay que desde la carpeta `xv6-modularized`, después de haber hecho un `make qemu` para que se compile xv6, hacer `bash ../Automatizar_mediciones/AutoMed.sh` para correr los test y después `bash ../Automatizar_mediciones/Extrear_archivos.sh` para extraer los archivos.
 
 # Parte III: Rastreando la prioridad de los procesos
 
 Habiendo visto las propiedades del planificador existente, reemplazarlo con un planificador MLFQ de tres niveles. Esto se debe hacer de manera gradual, primero rastrear la prioridad de los procesos, sin que esto afecte la planificación.
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre 0 y NPRIO-1 para #define NPRIO 3 niveles en total) y manténgala actualizada según el comportamiento del proceso:
-
 * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
 
 * MLFQ regla 4:
-
+  
   * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
-
+  
   * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
 
 > Nota: Este comportamiento es distinto al del MLFQ del libro.
@@ -239,7 +246,7 @@ Y el **ascenso de prioridad** ocurre en el `sleep()` ya que es donde se cambia d
 Finalmente implementar la planificación propiamente dicha para que nuestro xv6 utilice MLFQ.
 
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
-
+   
    * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
    * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en round-robin por el quantum determinado.
 
@@ -265,7 +272,6 @@ Con la implementación que tenemos siempre se va a correr el proceso de priorida
 
 Es importante observar que en esta implementación siempre que un proceso consuma su quantum y ejecute `yield()` para ceder el CPU, se baja la prioridad del proceso.
 
-
 ### Respuesta 3
 
 Sí, se puede producir `starvation` en el nuevo planificador porque si hay un proceso largo `IO bound` o si hay varios procesos IO bound, con la política de ascensión que se implementó cada vez que se bloquea un proceso se le sube la prioridad, es decir que un proceso que devuelva el control al kernel antes de que termine el quantum ya que se bloquea siempre se va a mantener en la prioridad más alta, por lo que los procesos que esten en la prioridad más baja nunca tienen oportunidad de correr.
@@ -273,7 +279,7 @@ Sí, se puede producir `starvation` en el nuevo planificador porque si hay un pr
 # Puntos estrellas
 
 - Del planificador:
-
+  
   1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
   2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de quantum.
   3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
@@ -281,15 +287,15 @@ Sí, se puede producir `starvation` en el nuevo planificador porque si hay un pr
   5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
-
+  
   - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ## Quantum distinto por prioridad
+
 ----
 
-
-
 ## Priority Boost de OSTEP
+
 ---
 
 En este punto se cambio la implementación anterior del priority boost en el que se asciende la prioridad del proceso cada vez que este se bloquea, a una implementación mas parecida a la del libro OSTEP en la que se asciende la prioridad de todos los procesos a la prioridad más alta cada cierta cantidad de tiempo.
