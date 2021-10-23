@@ -68,7 +68,7 @@ Y para matarlo: `kill pid`
 
 ## Manejo básico de qemu
 
-- Para listar los procesos dentro de xv6 hacer `<CRTL-p>`.
+- Para listar los procesos dentro de `xv6` hacer `<CRTL-p>`.
 
 - Salir de QEMU: `<CTRL-a> x`.
 
@@ -157,7 +157,7 @@ Con el código que tiene `xv6` originalmente no es posible, ya que se le asigna 
 
 # Parte II: Cómo el planificador afecta a los procesos
 
-    El tipo de planificador puede influir en cuantos recursos se le asignan a cada proceso. En particular, el planificador *round robin* que viene en xv6 asigna el mismo *quantum* a todos los procesos, mientras que el planificador MLFQ (Multi Level Feedback Queue) asigna *quantums* distintos a cada proceso dependiendo de su prioridad.
+    El tipo de planificador puede influir en cuantos recursos se le asignan a cada proceso. En particular, el planificador *round robin* que viene en `xv6` asigna el mismo *quantum* a todos los procesos, mientras que el planificador MLFQ (Multi Level Feedback Queue) asigna *quantums* distintos a cada proceso dependiendo de su prioridad.
 
     Es interesante y muy útil, saber como afecta de distinta manera a los procesos de distintos tipos. Para eso, junto con la consigna nos dieron 2 programas para realizar distintas mediciones.
 
@@ -173,25 +173,25 @@ Con el código que tiene `xv6` originalmente no es posible, ya que se le asigna 
 
     En la consigna se pide ejecutar en distintas combinaciones estos programas con el planificador por defecto y con el nuestro, para poder compararlos. Hacer eso a mano es bastante trabajo, así que nosotros decidimos intentar automatizarlo un poco.
 
-    Para automatizarlo hicimos 2 scripts en la carpeta `Automatizar_mediciones`, uno que se encarga de ejecutar todos los test y guardar los resultados en archivos dentro de xv6, y otro que se encargue de extraer de xv6 esos archivos.
+    Para automatizarlo hicimos 2 scripts en la carpeta `Automatizar_mediciones`, uno que se encarga de ejecutar todos los test y guardar los resultados en archivos dentro de `xv6`, y otro que se encargue de extraer de `xv6` esos archivos.
 
     A continuación una explicación de como funciona cada uno de ellos:
 
 ### AutoMed.sh
 
-    Este es el script que se encarga de ejecutar los tests, redirigiendo las salidas a archivos dentro de xv6.
+    Este es el script que se encarga de ejecutar los tests, redirigiendo las salidas a archivos dentro de `xv6`.
 
-    Lo que hace es tener una lista de los comandos a ejecutar en cada test y para cada uno ejecuta xv6 durante un cierto tiempo pasándole a la entrada estándar el comando de este test.
+    Lo que hace es tener una lista de los comandos a ejecutar en cada test y para cada uno ejecuta `xv6` durante un cierto tiempo pasándole a la entrada estándar el comando de este test.
 
 ### Extraer_archivos.sh
 
-    Este es el script que se encarga de extraer los archivos de xv6.
+    Este es el script que se encarga de extraer los archivos de `xv6`.
 
     Lo que hace es tener una lista de los archivos que tiene que extraer, y para cada uno ejecuta qemu pasándole a la entrada estándar `cat nombre_del_archivo`, y redirigiendo la salida a un archivo del mismo nombre en Linux, quitándole las primeras 14 lineas, que son los que se imprime hasta el `cat`, y los últimos 2 caracteres que son el `$ ` que se imprime después.
 
     Para generar los comandos que hay que ejecutar y los nombres de los archivos que hay que extraer usamos un pequeño archivo de haskell `Generador_listas.hs`, en donde `comandos_test` son los comandos y `archivos_test` los archivos.
 
-    Para usar los scripts hay que, desde la carpeta `xv6-modularized`, después de haber hecho un `make qemu` para que se compile xv6, hacer `bash ../Automatizar_mediciones/AutoMed.sh` para correr los test y después `bash ../Automatizar_mediciones/Extrear_archivos.sh` para extraer los archivos.
+    Para usar los scripts hay que, desde la carpeta `xv6-modularized`, después de haber hecho un `make qemu` para que se compile `xv6`, hacer `bash ../Automatizar_mediciones/AutoMed.sh` para correr los test y después `bash ../Automatizar_mediciones/Extrear_archivos.sh` para extraer los archivos.
 
 ## Mediciones RR
 
@@ -341,7 +341,7 @@ Sí, se puede producir `starvation` en el nuevo planificador, porque si hay un p
 
     3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
 
-    4. [ ] (Difícil) Cuando xv6 corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
+    4. [ ] (Difícil) Cuando `xv6` corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
 
     5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
@@ -372,7 +372,7 @@ Decidimos que el *quantum* de cada prioridad sería de la siguiente manera:
 
 Es decir para cada prioridad su *quantum* sería igual a 2^prioridad.
 
-Para poder llevar la cuenta del tiempo (cantidad de ticks) que llevaba cada proceso corriendo en su prioridad actual añadimos un campo al `struct proc` del archivo `proc.h` llamado `ticks_running`. Cada vez que se inicia un proceso el mismo se inicializa con `ticks_running = 0`, luego mientras el proceso se está ejecutando, cada vez que ocurra un timer interrupt se aumenta esta variable en 1 y se revisa si `ticks_running` es mayor o igual a su quantum correspondiente y en este caso se hace `yield()` y se devuelve el CPU.
+Para poder llevar la cuenta del tiempo (cantidad de ticks) que llevaba cada proceso corriendo en su prioridad actual añadimos un campo al `struct proc` del archivo `proc.h` llamado `ticks_running`. Cada vez que se inicia un proceso el mismo se inicializa con `ticks_running = 0`, luego mientras el proceso se está ejecutando, cada vez que ocurra un timer interrupt se aumenta esta variable en 1 y se revisa si `ticks_running` es mayor o igual a su *quantum* correspondiente y en este caso se hace `yield()` y se devuelve el CPU.
 
 En algunos casos los procesos pueden bloquearse antes de terminar con su *quantum*, lo que quiere decir que no llaman a `yield` por lo que al proceso no se le baja la prioridad, y cuando vuelve a correr en la misma prioridad tiene un *quantum* completo para correr, para que esto no suceda decidimos que solo se reinicia la variable `ticks_running` (es decir se coloca en 0), cuando el proceso hace `yield`, de esta manera si el proceso se bloquea sin haber terminado el cuanto se lleva la cuanta de por cuantos ticks se había ejecutado antes de bloquearse.
 
@@ -426,7 +426,7 @@ Finalmente, a pesar de que no se indica en la consigna, decidimos hacer una medi
 
 ![quantum-100-menor-mlfq-estrella](/imagenes/mlfq_estrella_100less.jpg "MLFQ estrella quantum 100 veces menor")
 
-Se puede observar que sucede lo mismo que con los planificadores anteriores, es decir que al disminuir el quantum las mediciones de `cpubench` son tan bajas que no se ven en el gráfico, sin embargo también se puede observar una considerable mejora en las mediciones de `iobench`, igualmente en las mediciones de `cpubench` que se pueden observar en el primer gráfico del *quantum* normal.
+Se puede observar que sucede lo mismo que con los planificadores anteriores, es decir que al disminuir el *quantum* las mediciones de `cpubench` son tan bajas que no se ven en el gráfico, sin embargo también se puede observar una considerable mejora en las mediciones de `iobench`, igualmente en las mediciones de `cpubench` que se pueden observar en el primer gráfico del *quantum* normal.
 
 ---
 
