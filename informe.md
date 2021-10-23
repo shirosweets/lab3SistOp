@@ -125,11 +125,11 @@ Referencias:
 
 ## Pregunta 2
 
-2. Analizar el código que interrumpe a un proceso al final de su quantum y responda:
+  2. Analizar el código que interrumpe a un proceso al final de su quantum y responda:
    
-   a. ¿Cuánto dura un quantum en xv6?
+      a. ¿Cuánto dura un quantum en xv6?
    
-   b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
+      b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 > Pista: Se puede empezar a buscar desde la system call uptime .
 
