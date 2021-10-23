@@ -18,7 +18,12 @@ Segundo cuatrimestre, FAMAF.
 
 **Código**
 
+* [cpubench.c](xv6-modularized/user/cpubench.c)
+* [iobench.c](xv6-modularized/user/iobench.c)
+
 **Estilo del código**
+
+* Estilo original del código de `xv6`
 
 ---
 
