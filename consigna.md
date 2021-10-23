@@ -53,7 +53,7 @@ poder de cómputo, respectivamente.
 
 
     **Caso 6**: 2 `cpubench`
-    
+
 
     **Caso 7**: 2 `iobench`
 
@@ -82,12 +82,12 @@ actualizada según el comportamiento del proceso:
 
     * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*. **Nota**: Este comportamiento es distinto al del MLFQ del libro.
 
-2. Para comprobar que estos cambios se hicieron correctamente, modifique la función *procdump* (que se invoca con *CTRL-P*) para que imprima la prioridad
-de los procesos. Así, al correr nuevamente *iobench* y *cpubench* , debería darse que *cpubench* tenga baja prioridad mientras que *iobench* tenga alta prioridad.
+2. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad
+de los procesos. Así, al correr nuevamente `iobench` y `cpubench` , debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
 
 ## Cuarta Parte: Implementando MLFQ
 
-Finalmente implementar la planificación propiamente dicha para que nuestro *xv6* utilice MLFQ.
+Finalmente implementar la planificación propiamente dicha para que nuestro `xv6` utilice MLFQ.
 
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
 
@@ -98,7 +98,7 @@ Finalmente implementar la planificación propiamente dicha para que nuestro *xv6
 2. Repita las mediciones de la segunda parte para ver las propiedades del nuevo planificador.
 
 3. Para análisis responda: ¿Se puede producir *starvation* en el nuevo planificador? Justifique su respuesta.
-**Importante** : Mucho cuidado con el uso correcto del mutex ptable.lock.
+**Importante** : Mucho cuidado con el uso correcto del `mutex ptable.lock`.
 
 
 ## Extras
@@ -116,6 +116,7 @@ Finalmente implementar la planificación propiamente dicha para que nuestro *xv6
     5. (Muy difícil) Y si no quisiéramos usar los ticks periódicos del timer por el problema de (1), ¿qué haríamos? Investigue cómo funciona e implemente un tickless kernel.
 
 * De las herramientas de medición:
+    
 
     * Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
