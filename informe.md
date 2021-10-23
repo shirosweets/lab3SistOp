@@ -12,8 +12,6 @@
 
 # Contenido
 
-- [Informe lab 3](#informe-lab-3)
-- [Contenido](#contenido)
 - [Instalación](#instalación)
     - [QEMU](#qemu)
 - [¿Cómo correrlo?](#cómo-correrlo)
@@ -28,12 +26,14 @@
     - [Automatizado de testeos](#automatizado-de-testeos)
         - [`AutoMed.sh`](#automedsh)
         - [`Extraer_archivos.sh`](#extraer_archivossh)
+    - [Mediciones](#mediciones)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
     - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
     - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
     - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
     - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
+    - [Respuesta 3](#respuesta-3)
 - [Puntos estrellas](#puntos-estrellas)
     - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
     - [Priority Boost de OSTEP](#priority-boost-de-ostep)
@@ -175,13 +175,13 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
     A continuación una explicación de como funciona cada uno de ellos:
 
-### `AutoMed.sh`
+## `AutoMed.sh`
 
     Este es el script que se encarga de ejecutar los test, redirigiendo las salidas a archivos dentro de xv6.
 
     Lo que hace es tener una lista de los comandos a ejecutar en cada test y para cada uno ejecuta xv6 durante un cierto tiempo pasandole a la entrada estándar el comando de este test.
 
-### `Extraer_archivos.sh`
+## `Extraer_archivos.sh`
 
     Este es el script que se encarga de extraer los archivos de xv6.
 
@@ -191,6 +191,38 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
     Para generar los comandos que hay que ejecutar y los nombres de los archivos que hay que extraer usamos un pequeño archivo de haskell `Generador_listas.hs`, en donde `comandos_test` son los comandos y `archivos_test` los archivos.
 
     Para usar los scripts hay que desde la carpeta `xv6-modularized`, después de haber hecho un `make qemu` para que se compile xv6, hacer `bash ../Automatizar_mediciones/AutoMed.sh` para correr los test y después `bash ../Automatizar_mediciones/Extrear_archivos.sh` para extraer los archivos.
+
+## Mediciones
+
+A continuación presentamos una tabla que representa cada caso de las mediciones realizadas:
+
+| Caso |     Descripción      | 
+|------|----------------------|
+|   0  | 1 iobench            |
+|   1  | 1 iobench 1 cpubench |
+|   2  | 1 iobench 2 cpubench |
+|   3  | 1 cpubench           |
+|   4  | 1 cpubench 2 iobench |
+|   5  | 2 cpubench 2 iobench |
+|   6  | 2 cpubench           |
+|   7  | 2 iobench            |
+
+Todos los casos de la tabla se midieron en el scheduler original de xv6 usando el quantum normal, 10 veces menor y 100 veces menor. A pesar de que en la consigna piden realizar la medición con un quantum 1000 veces menor decidimos no realizarlo ya que el xv6 se vuelve tan lento que la mayoria de las mediciones devuelve 0.
+
+Cada vez que eliminabamos un 0 del quantum para reducir su tiempo, en los archivos `cpubench` e `iobench` se aumentaba por un cero la variable `MINTICKS` para que de esta manera se obtuviera una cantidad similar de resultados en todas las mediciones. A continuación presentamos los gráficos correspondientes a cada quantum.
+
+* Quantum normal:
+
+![quantum-normal](../imagenes/rrnormal.jpg)
+
+* Quantum 10 veces menor:
+
+![quantum-10-menor](../imagenes/rr10less.jpg)
+
+* Quantum 100 veces menor:
+
+![quantum-100-menor](../imagenes/rr100less.jpg)
+
 
 # Parte III: Rastreando la prioridad de los procesos
 
@@ -293,11 +325,7 @@ Sí, se puede producir `starvation` en el nuevo planificador porque si hay un pr
 
 ## Quantum distinto por prioridad
 
-----
-
 ## Priority Boost de OSTEP
-
----
 
 En este punto se cambio la implementación anterior del priority boost en el que se asciende la prioridad del proceso cada vez que este se bloquea, a una implementación mas parecida a la del libro OSTEP en la que se asciende la prioridad de todos los procesos a la prioridad más alta cada cierta cantidad de tiempo.
 
