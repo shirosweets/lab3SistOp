@@ -33,6 +33,7 @@
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
     - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
     - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
+    - [Mediciones](#mediciones)
     - [Respuesta 3](#respuesta-3)
 - [Puntos estrellas](#puntos-estrellas)
     - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
@@ -175,13 +176,13 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
     A continuación una explicación de como funciona cada uno de ellos:
 
-## `AutoMed.sh`
+### AutoMed.<i></i>sh
 
     Este es el script que se encarga de ejecutar los test, redirigiendo las salidas a archivos dentro de xv6.
 
     Lo que hace es tener una lista de los comandos a ejecutar en cada test y para cada uno ejecuta xv6 durante un cierto tiempo pasandole a la entrada estándar el comando de este test.
 
-## `Extraer_archivos.sh`
+### Extraer_archivos.sh
 
     Este es el script que se encarga de extraer los archivos de xv6.
 
@@ -195,6 +196,9 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 ## Mediciones
 
 A continuación presentamos una tabla que representa cada caso de las mediciones realizadas:
+
+<a name="tabla">
+</a>
 
 | Caso |     Descripción      | 
 |------|----------------------|
@@ -213,15 +217,15 @@ Cada vez que eliminabamos un 0 del quantum para reducir su tiempo, en los archiv
 
 * Quantum normal:
 
-![quantum-normal](../imagenes/rrnormal.jpg)
+![quantum-normal](/imagenes/rrnormal.jpg)
 
 * Quantum 10 veces menor:
 
-![quantum-10-menor](../imagenes/rr10less.jpg)
+![quantum-10-menor](/imagenes/rr10less.jpg)
 
 * Quantum 100 veces menor:
 
-![quantum-100-menor](../imagenes/rr100less.jpg)
+![quantum-100-menor](/imagenes/rr100less.jpg)
 
 
 # Parte III: Rastreando la prioridad de los procesos
@@ -305,7 +309,11 @@ Con la implementación que tenemos siempre se va a correr el proceso de priorida
 
 Es importante observar que en esta implementación siempre que un proceso consuma su quantum y ejecute `yield()` para ceder el CPU, se baja la prioridad del proceso.
 
-### Respuesta 3
+## Mediciones
+
+En este punto se realizaron las mismas mediciones que se realizaron anteriormente con el scheduler original de `xv6`, también se omitieron las mediciones del quantum 1000 veces menor por el mismo motivo. Para conocer que medición representa cada caso referirse a la [tabla](#tabla) anterior.
+
+## Respuesta 3
 
 Sí, se puede producir `starvation` en el nuevo planificador porque si hay un proceso largo `IO bound` o si hay varios procesos IO bound, con la política de ascensión que se implementó cada vez que se bloquea un proceso se le sube la prioridad, es decir que un proceso que devuelva el control al kernel antes de que termine el quantum ya que se bloquea siempre se va a mantener en la prioridad más alta, por lo que los procesos que esten en la prioridad más baja nunca tienen oportunidad de correr.
 
