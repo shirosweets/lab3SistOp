@@ -26,14 +26,14 @@
     - [Automatizado de testeos](#automatizado-de-testeos)
         - [`AutoMed.sh`](#automedsh)
         - [`Extraer_archivos.sh`](#extraer_archivossh)
-    - [Mediciones](#mediciones)
+    - [Mediciones](#mediciones-rr)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
     - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
     - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
     - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
     - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
-    - [Mediciones](#mediciones)
+    - [Mediciones](#mediciones-mlfq)
     - [Respuesta 3](#respuesta-3)
 - [Puntos estrellas](#puntos-estrellas)
     - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
@@ -193,12 +193,10 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
     Para usar los scripts hay que desde la carpeta `xv6-modularized`, después de haber hecho un `make qemu` para que se compile xv6, hacer `bash ../Automatizar_mediciones/AutoMed.sh` para correr los test y después `bash ../Automatizar_mediciones/Extrear_archivos.sh` para extraer los archivos.
 
-## Mediciones
+## Mediciones RR
 
 A continuación presentamos una tabla que representa cada caso de las mediciones realizadas:
 
-<a name="tabla">
-</a>
 
 | Caso |     Descripción      | 
 |------|----------------------|
@@ -217,15 +215,15 @@ Cada vez que eliminabamos un 0 del quantum para reducir su tiempo, en los archiv
 
 * Quantum normal:
 
-![quantum-normal](/imagenes/rrnormal.jpg)
+![quantum-normal-rr](/imagenes/rrnormal.jpg "round robin quantum normal")
 
 * Quantum 10 veces menor:
 
-![quantum-10-menor](/imagenes/rr10less.jpg)
+![quantum-10-menor-rr](/imagenes/rr10less.jpg "round robin quantum 10 veces menor")
 
 * Quantum 100 veces menor:
 
-![quantum-100-menor](/imagenes/rr100less.jpg)
+![quantum-100-menor-rr](/imagenes/rr100less.jpg "round robin quantum 100 veces menor")
 
 
 # Parte III: Rastreando la prioridad de los procesos
@@ -309,9 +307,23 @@ Con la implementación que tenemos siempre se va a correr el proceso de priorida
 
 Es importante observar que en esta implementación siempre que un proceso consuma su quantum y ejecute `yield()` para ceder el CPU, se baja la prioridad del proceso.
 
-## Mediciones
+## Mediciones MLFQ
 
-En este punto se realizaron las mismas mediciones que se realizaron anteriormente con el scheduler original de `xv6`, también se omitieron las mediciones del quantum 1000 veces menor por el mismo motivo. Para conocer que medición representa cada caso referirse a la [tabla](#tabla) anterior.
+En este punto se realizaron las mismas mediciones que se realizaron anteriormente con el scheduler original de `xv6`, también se omitieron las mediciones del quantum 1000 veces menor por el mismo motivo. Para conocer que medición representa cada caso referirse a la [tabla](#mediciones-rr) anterior. 
+
+* Quantum normal:
+
+![quantum-normal-mlfq](/imagenes/mlfqnormal.jpg "MLFQ quantum normal")
+
+* Quantum 10 veces menor:
+
+![quantum-normal-rr](/imagenes/mlf10less.jpg "MLFQ quantum 10 veces menor")
+
+* Quantum 100 veces menor:
+
+![quantum-normal-rr](/imagenes/mlf100less.jpg "MLFQ quantum 100 veces menor")
+
+Similarmente a lo que sucedia con el planificador round-robin en los casos en que se reducía el quantum las mediciones de `cpubench` son tan bajas que prácticamente no se pueden observar en los gráficos. También se puede observar que con el *quantum* normal el planificador MLFQ tiene mejores mediciones en cuanto a `iobench` pero que mientras más se reduce el quantum más empeora el desempeño del mismo.
 
 ## Respuesta 3
 
@@ -342,6 +354,8 @@ Para hacer esto creamos una función `priority_boost` en el archivo `proc.c` en 
 Cada vez que se realiza un timer interrupt en xv6 se aumenta el contador de ticks que son los que llevan la cuenta del tiempo que ha pasado, por eso decidimos que en el archivo `trap.c`, en donde se aumenta la variable ticks , se chequee si ya paso la cantidad de tiempo definido por la constante `BOOSTTIMER`, de esta forma si `ticks % BOOSTTIMER == 0` se hace la llamada a `priority_boost` para ascender la prioridad de los procesos.
 
 Debido a la implementación con colas que manejamos luego de ascender la prioridad de los procesos es importante actualizar el primer y último elemento de cada cola de prioridad, en este caso lo que hacemos es concatenar los procesos de manera que el último proceso de cada cola apunte al primer elemento de la siguiente cola no vacía.
+
+![queue-before-boost](/imagenes/queue.png)
 
 ---
 
