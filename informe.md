@@ -13,68 +13,32 @@
 # Contenido
 
 - [Instalación](#instalación)
-    - [QEMU](#qemu)
+  - [QEMU](#qemu)
 - [¿Cómo correrlo?](#cómo-correrlo)
-    - [Manejo básico de qemu](#manejo-básico-de-qemu)
+  - [Manejo básico de qemu](#manejo-básico-de-qemu)
 - [Parte I: Estudiando el planificador de xv6](#parte-i-estudiando-el-planificador-de-xv6)
-    - [Pregunta 1](#pregunta-1)
-        - [Respuesta 1](#respuesta-1)
-    - [Pregunta 2](#pregunta-2)
-        - [Respuesta 2a](#respuesta-2a)
-        - [Respuesta 2b](#respuesta-2b)
+  - [Pregunta 1](#pregunta-1)
+    - [Respuesta 1](#respuesta-1)
+  - [Pregunta 2](#pregunta-2)
+    - [Respuesta 2a](#respuesta-2a)
+    - [Respuesta 2b](#respuesta-2b)
 - [Parte II: Cómo el planificador afecta a los procesos](#parte-ii-cómo-el-planificador-afecta-a-los-procesos)
-    - [Automatizado de testeos](#automatizado-de-testeos)
-        - [`AutoMed.sh`](#automedsh)
-        - [`Extraer_archivos.sh`](#extraer_archivossh)
-    - [Mediciones](#mediciones-rr)
+  - [Automatizado de testeos](#automatizado-de-testeos)
+    - [`AutoMed.sh`](#automedsh)
+    - [`Extraer_archivos.sh`](#extraer_archivossh)
+  - [Mediciones](#mediciones-rr)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
-    - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
-    - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
+  - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
+  - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Parte IV: Implementando MLFQ](#parte-iv-implementando-mlfq)
-    - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
-    - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
-    - [Mediciones](#mediciones-mlfq)
-    - [Respuesta 3](#respuesta-3)
+  - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
+  - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
+  - [Mediciones](#mediciones-mlfq)
+  - [Respuesta 3](#respuesta-3)
 - [Puntos estrellas](#puntos-estrellas)
-    - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
-    - [Priority Boost de OSTEP](#priority-boost-de-ostep)
+  - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
+  - [Priority Boost de OSTEP](#priority-boost-de-ostep)
 - [Mediciones MLFQ final](#mediciones-mlfq-final)
-
----
-
-# Instalación
-
-## QEMU
-
-```bash
-sudo apt-get update -y
-```
-
-```bash
-sudo apt-get install -y qemu-system-i386
-```
-
-# ¿Cómo correrlo?
-
-`cd xv6-modularized && make clean && make CPUS=1 qemu-nox`
-
-Para correr las benchmarks se debe escribir:
-
-`cpubench &`
-
-`iobench &`
-
-Y para matarlo: `kill pid`
-
-## Manejo básico de qemu
-
-- Para listar los procesos dentro de `xv6` hacer `<CRTL-p>`.
-
-- Salir de QEMU: `<CTRL-a> x`.
-
-- Para iniciar QEMU CON pantalla VGA: `make qemu`.
-
-- Para iniciar QEMU SIN pantalla VGA: `make qemu-nox`.
 
 ---
 
@@ -89,7 +53,9 @@ Y para matarlo: `kill pid`
 
 ### Respuesta 1
 
-La política que utiliza el `xv6` es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado denominado *quantum*.
+    La política que utiliza el `xv6` es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado denominado *quantum*.
+
+    El round robin de xv6 funciona teniendo todos los procesos en una tabla de procesos, y recorriendo esa tabla ejecutando cada ves al siguiente proceso.
 
 ```c
 void
@@ -121,27 +87,21 @@ scheduler(void)
 }
 ```
 
-Referencias:
 
-- [cs537p2b_xv6Scheduler.pdf](http://pages.cs.wisc.edu/~kzhao32/projects/cs537p2b_xv6Scheduler.pdf)
 
 ## Pregunta 2
 
-  2. Analizar el código que interrumpe a un proceso al final de su *quantum* y responda:
+2. Analizar el código que interrumpe a un proceso al final de su *quantum* y responda:
    
-      a. ¿Cuánto dura un *quantum* en `xv6`?
+    a. ¿Cuánto dura un *quantum* en `xv6`?
    
-      b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
+    b. ¿Hay alguna forma de que a un proceso se le asigne menos tiempo?
 
 > Pista: Se puede empezar a buscar desde la system call `uptime`.
 
 ### Respuesta 2a
 
-Cada vez que hay un timer interrupt, el proceso que está corriendo le entrega el control al kernel, lo que quiere decir que el *quantum* dura el mismo tiempo que existe entre timer interrupts. En el archivo `lapic.c` se indica que el timer cuenta `10000000` ticks para hacer un timer interrupt, estos ticks dependen de la velocidad del procesador.
-
-Ejemplo: En un procesador con una velocidad de `900MHz` se producen 900 millones de ticks por segundo, lo que quiere decir que produce `10000000` de ticks en aproximadamente 0,0111 segundos que es una centésima de segundo.
-
-En el archivo `lapic.c`:
+Cada vez que hay una interrupción por tiempo, el proceso que está corriendo le entrega el control al kernel, lo que quiere decir que el *quantum* dura lo mismo que el tiempo entre las interrupciones. En el archivo `lapic.c` es en donde se setean las interrupciones por tiempo, es esta parte de la función `lapicinit`:
 
 ```c
 // The timer repeatedly counts down at bus frequency
@@ -151,9 +111,13 @@ En el archivo `lapic.c`:
 lapicw(TICR, 10000000);
 ```
 
+    Ese `10000000` es lo que se setea, si son la cantidad de clocks para hacer una interrupción por tiempo, la velocidad a la que se hacen los clocks depende el procesador.
+
+Ejemplo: En un procesador con una velocidad de `900MHz` se producen 900 millones de clocks por segundo, lo que quiere decir que `10000000` de clocks se hacen en aproximadamente 0.0111 segundos que es aproximadamente una centésima de segundo.
+
 ### Respuesta 2b
 
-Con el código que tiene `xv6` originalmente no es posible, ya que se le asigna el mismo *quantum* a todos los procesos, pero si es posible modificar el código para darle distintos *quantums* a los procesos.
+    En el xv6 original el quantum dura siempre lo mismo, sin embargo, no necesariamente los procesos se ejecutan de forma consecutiva durante un quantum completo, ya que puede pasar que un proceso deje de ejecutarse a la mitad del quantum (por ejemplo porque inicio una lectura al sistema de archivos), y en ese caso lo que pasa es que se elige otro proceso para correr, pero solo corre hasta que que pasan `10000000` clocks desde que se eligió el primer proceso, no el segundo. Esto es porque las interrupciones por tiempo ocurren siempre cada `10000000` clocks, sin importar cuantos clocks lleva corriendo el proceso actual.
 
 # Parte II: Cómo el planificador afecta a los procesos
 
@@ -197,49 +161,48 @@ Con el código que tiene `xv6` originalmente no es posible, ya que se le asigna 
 
 A continuación presentamos una tabla que representa cada caso de las mediciones realizadas:
 
-
-| Caso |     Descripción      | 
-|------|----------------------|
-|   0  | 1 iobench            |
-|   1  | 1 iobench 1 cpubench |
-|   2  | 1 iobench 2 cpubench |
-|   3  | 1 cpubench           |
-|   4  | 1 cpubench 2 iobench |
-|   5  | 2 cpubench 2 iobench |
-|   6  | 2 cpubench           |
-|   7  | 2 iobench            |
+| Caso | Descripción          |
+| ---- | -------------------- |
+| 0    | 1 iobench            |
+| 1    | 1 iobench 1 cpubench |
+| 2    | 1 iobench 2 cpubench |
+| 3    | 1 cpubench           |
+| 4    | 1 cpubench 2 iobench |
+| 5    | 2 cpubench 2 iobench |
+| 6    | 2 cpubench           |
+| 7    | 2 iobench            |
 
 Todos los casos de la tabla se midieron en el planificador original de `xv6` usando el *quantum* normal, 10 veces menor y 100 veces menor. A pesar de que en la consigna piden realizar la medición con un quantum 1000 veces menor decidimos no realizarlo ya que el `xv6` se vuelve tan lento que la mayoria de las mediciones devuelven 0.
 
 Cada vez que eliminabamos un 0 del *quantum* para reducir su tiempo, en los archivos `cpubench` e `iobench` se aumentaba por un cero la variable `MINTICKS` para que de esta manera se obtuviera una cantidad similar de resultados en todas las mediciones. A continuación presentamos los gráficos correspondientes a cada *quantum*.
 
-* *Quantum* normal:
+* 
 
-![quantum-normal-rr](/imagenes/rrnormal.jpg "round robin quantum normal")
+![quantum-normal-rr](imagenes/rrnormal.jpg "round robin quantum normal")
 
 * *Quantum* 10 veces menor:
 
-![quantum-10-menor-rr](/imagenes/rr10less.jpg "round robin quantum 10 veces menor")
+![quantum-10-menor-rr](imagenes/rr10less.jpg "round robin quantum 10 veces menor")
 
 * *Quantum* 100 veces menor:
 
-![quantum-100-menor-rr](/imagenes/rr100less.jpg "round robin quantum 100 veces menor")
-
+![quantum-100-menor-rr](imagenes/rr100less.jpg "round robin quantum 100 veces menor")
 
 # Parte III: Rastreando la prioridad de los procesos
 
 Habiendo visto las propiedades del planificador existente, reemplazarlo con un planificador MLFQ de tres niveles. Esto se debe hacer de manera gradual, primero rastrear la prioridad de los procesos, sin que esto afecte la planificación.
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre `0` y `NPRIO-1` para `#define NPRIO 3` niveles en total) y manténgala actualizada según el comportamiento del proceso:
-
-    * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
-
-    * MLFQ regla 4:
-  
-        * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
-  
-        * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
-        > Nota: Este comportamiento es distinto al del MLFQ del libro.
+   
+   * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
+   
+   * MLFQ regla 4:
+     
+     * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
+     
+     * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
+       
+       > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
 2. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
 
@@ -284,8 +247,8 @@ Finalmente implementar la planificación propiamente dicha para que nuestro `xv6
 
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
    
-    * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
-    * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en *round-robin* por el *quantum* determinado.
+   * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
+   * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en *round-robin* por el *quantum* determinado.
 
 2. Repita las mediciones de la segunda parte para ver las propiedades del nuevo planificador.
 
@@ -315,15 +278,15 @@ En este punto se realizaron las mismas mediciones que se realizaron anteriorment
 
 * *Quantum* normal:
 
-![quantum-normal-mlfq](/imagenes/mlfqnormal.jpg "MLFQ quantum normal")
+![quantum-normal-mlfq](imagenes/mlfqnormal.jpg "MLFQ quantum normal")
 
-* *Quantum* 10 veces menor:
+* 
 
-![quantum-normal-rr](/imagenes/mlf10less.jpg "MLFQ quantum 10 veces menor")
+![quantum-normal-rr](imagenes/mlf10less.jpg "MLFQ quantum 10 veces menor")
 
 * *Quantum* 100 veces menor:
 
-![quantum-normal-rr](/imagenes/mlf100less.jpg "MLFQ quantum 100 veces menor")
+![quantum-normal-rr](imagenes/mlf100less.jpg "MLFQ quantum 100 veces menor")
 
 Similarmente a lo que sucedia con el planificador *round-robin* en los casos en que se reduce el *quantum* las mediciones de `cpubench` son tan bajas que prácticamente no se pueden observar en los gráficos. También se puede observar que con el *quantum* normal el planificador MLFQ tiene mejores mediciones en cuanto a `iobench` pero que mientras más se reduce el quantum más empeora el desempeño del mismo con respecto al planificador *round-robin*.
 
@@ -335,19 +298,19 @@ Sí, se puede producir `starvation` en el nuevo planificador, porque si hay un p
 
 - Del planificador:
   
-    1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
-
-    2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de *quantum*.
-
-    3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
-
-    4. [ ] (Difícil) Cuando `xv6` corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
-
-    5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
+  1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
+  
+  2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de *quantum*.
+  
+  3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
+  
+  4. [ ] (Difícil) Cuando `xv6` corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
+  
+  5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
   
-    - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
+  - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ## Quantum distinto por prioridad
 
@@ -365,10 +328,10 @@ Es decir que cada vez que hay un timer interrupt el proceso devuelve el CPU, lo 
 Decidimos que el *quantum* de cada prioridad sería de la siguiente manera:
 
 | Prioridad | Quantum |
-|-----------|---------|
-|     0     |  1 tick |
-|     1     |  2 ticks|
-|     2     |  4 ticks|
+| --------- | ------- |
+| 0         | 1 tick  |
+| 1         | 2 ticks |
+| 2         | 4 ticks |
 
 Es decir para cada prioridad su *quantum* sería igual a 2^prioridad.
 
@@ -390,6 +353,7 @@ if(myproc() && myproc()->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER){
     yield();
 }
 ```
+
 Observar que como en `xv6` no tenemos la manera de representar potencias 2^prioridad es equivalente a 1 << prioridad, en donde << se refiere a un logical shift left.
 
 ## Priority Boost de OSTEP
@@ -408,7 +372,7 @@ Colas antes del priority boost:
 
 Colas despues del priority boost:
 
-![queue-after-boost](/imagenes/queue-after-boost.jpg "queues after priority boost")
+![queue-after-boost](imagenes/queue-after-boost.jpg "queues after priority boost")
 
 # Mediciones MLFQ final
 
@@ -416,15 +380,15 @@ Finalmente, a pesar de que no se indica en la consigna, decidimos hacer una medi
 
 * *Quantum* normal:
 
-![quantum-normal-mlfq-estrella](/imagenes/mlfq_estrella_normal.jpg "MLFQ estrella quantum normal")
+![quantum-normal-mlfq-estrella](imagenes/mlfq_estrella_normal.jpg "MLFQ estrella quantum normal")
 
 * *Quantum* 10 veces menor:
 
-![quantum-10-menor-mlfq-estrella](/imagenes/mlfq_estrella_10less.jpg "MLFQ estrella quantum 10 veces menor")
+![quantum-10-menor-mlfq-estrella](imagenes/mlfq_estrella_10less.jpg "MLFQ estrella quantum 10 veces menor")
 
 * *Quantum* 100 veces menor:
 
-![quantum-100-menor-mlfq-estrella](/imagenes/mlfq_estrella_100less.jpg "MLFQ estrella quantum 100 veces menor")
+![quantum-100-menor-mlfq-estrella](imagenes/mlfq_estrella_100less.jpg "MLFQ estrella quantum 100 veces menor")
 
 Se puede observar que sucede lo mismo que con los planificadores anteriores, es decir que al disminuir el *quantum* las mediciones de `cpubench` son tan bajas que no se ven en el gráfico, sin embargo también se puede observar una considerable mejora en las mediciones de `iobench`, igualmente en las mediciones de `cpubench` que se pueden observar en el primer gráfico del *quantum* normal.
 
