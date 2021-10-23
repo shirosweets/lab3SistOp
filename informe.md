@@ -25,9 +25,9 @@
     - [Respuesta 2a](#respuesta-2a)
     - [Respuesta 2b](#respuesta-2b)
 - [Parte II: Cómo el planificador afecta a los procesos](#parte-ii-cómo-el-planificador-afecta-a-los-procesos)
-  - [`AutoMed.sh`](#automedsh)
-  - [`Extraer_archivos.sh`](#extraer_archivossh)
-    - [Automatizado de testeos](#automatizado-de-testeos)
+  - [Automatizado de testeos](#automatizado-de-testeos)
+    - [`AutoMed.sh`](#automedsh)
+    - [`Extraer_archivos.sh`](#extraer_archivossh)
 - [Parte III: Rastreando la prioridad de los procesos](#parte-iii-rastreando-la-prioridad-de-los-procesos)
   - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
   - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
@@ -167,6 +167,8 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
 
     Nosotros decidimos modificar un poco estos programas, para hacer que en lugar de imprimir la cantidad de operaciones por cierta cantidad de ticks, imprima la cantidad de operaciones y la cantidad de ticks por separado, para hacer nosotros la división, y evitar la perdida de error por el redondeo de la división entera (en `iobench` habían hecho que se imprima en `MINTICKS` ticks posiblemente para evitar un poco eso, pero nos pareció mejor directamente imprimir todo).
 
+## Automatizado de testeos
+
     En la consigna se pide ejecutar en distintas combinaciones estos programas con el planificador por defecto y con el nuestro, para poder compararlos. Hacer eso a mano es bastante trabajo, así que nosotros decidimos intentar automatizarlo un poco.
 
     Para automatizarlo hicimos 2 scripts en la carpeta `Automatizar_mediciones`, uno que se encarga de ejecutar todos los test y guardar los resultados en archivos dentro de xv6, y otro que se encargue de extraer de xv6 los archivos esos.
@@ -184,7 +186,6 @@ Con el código que tiene xv6 no es posible, ya que se le asigna el mismo quantum
     Este es el script que se encarga de extraer los archivos de xv6.
 
     Lo que hace es tener una lista de los archivos que tiene que extraer, y para cada uno ejecuta qemu pasandole a la entrada estándar `cat nombre_del_archivo`, y redirigiendo la salida a un archivo del mismo nombre en linux, quitandole las primeras 14 lineas, que son los que se imprime hasta el `cat`, y los últimos 2 caracteres que son el `$ ` que se imprime después.
-
 
 
     Para generar los comandos que hay que ejecutar y los nombres de los archivos que hay que extraer usamos un pequeño archivo de haskell `Generador_listas.hs`, en donde `comandos_test` son los comandos y `archivos_test` los archivos.
