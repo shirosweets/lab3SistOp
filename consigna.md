@@ -33,19 +33,27 @@ poder de cómputo, respectivamente.
 
 1. Mida la respuesta de I/O y el poder de cómputo obtenido para las distintas combinaciones posibles entre 0 y 2 `iobench` junto con entre 0 y 2 `cpubench`, y grafique los resultados en el informe.
 
+
     **Caso 0**: 1 `iobench`
+
 
     **Caso 1**: 1 `iobench` 1 `cpubench` 
 
+
     **Caso 2**: 1 `iobench` 2 `cpubench`
+
 
     **Caso 3**: 1 `cpubench`
 
+
     **Caso 4**: 1 `cpubench` 2 `iobench`
+
 
     **Caso 5**: 2 `cpubench` 2 `iobench`
 
+
     **Caso 6**: 2 `cpubench`
+    
 
     **Caso 7**: 2 `iobench`
 
