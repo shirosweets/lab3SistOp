@@ -174,7 +174,10 @@ A continuación presentamos una tabla que representa cada caso de las mediciones
 
 Todos los casos de la tabla se midieron en el planificador original de `xv6` usando el *quantum* normal, 10 veces menor y 100 veces menor. A pesar de que en la consigna piden realizar la medición con un quantum 1000 veces menor decidimos no realizarlo ya que el `xv6` se vuelve tan lento que la mayoria de las mediciones devuelven 0.
 
-Cada vez que eliminabamos un 0 del *quantum* para reducir su tiempo, en los archivos `cpubench` e `iobench` se aumentaba por un cero la variable `MINTICKS` para que de esta manera se obtuviera una cantidad similar de resultados en todas las mediciones. A continuación presentamos los gráficos correspondientes a cada *quantum*.
+
+Cada vez que eliminabamos un 0 del *quantum* para reducir su tiempo, en los archivos `cpubench` e `iobench` se aumentaba por un cero la variable `MINTICKS` para que de esta manera se obtuviera una cantidad similar de resultados en todas las mediciones. En la carpeta mediciones se encuentran los datos utilizados para los gráficos, y en la carpeta gráficos se encuentra el programa de jupyter notebooks que tiene el código con el cuál se realizaron los gráficos.
+
+A continuación presentamos los gráficos correspondientes a cada *quantum*.
 
 * 
 
