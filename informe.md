@@ -179,17 +179,17 @@ Cada vez que eliminabamos un 0 del *quantum* para reducir su tiempo, en los arch
 
 A continuación presentamos los gráficos correspondientes a cada *quantum*.
 
-* 
+* *Quantum* normal:
 
-![quantum-normal-rr](imagenes/rrnormal.jpg "round robin quantum normal")
+![quantum-normal-rr](imagenes/rr_normal.jpg "round robin quantum normal")
 
 * *Quantum* 10 veces menor:
 
-![quantum-10-menor-rr](imagenes/rr10less.jpg "round robin quantum 10 veces menor")
+![quantum-10-menor-rr](imagenes/rr_10less.jpg "round robin quantum 10 veces menor")
 
 * *Quantum* 100 veces menor:
 
-![quantum-100-menor-rr](imagenes/rr100less.jpg "round robin quantum 100 veces menor")
+![quantum-100-menor-rr](imagenes/rr_100less.jpg "round robin quantum 100 veces menor")
 
 # Parte III: Rastreando la prioridad de los procesos
 
@@ -281,17 +281,15 @@ En este punto se realizaron las mismas mediciones que se realizaron anteriorment
 
 * *Quantum* normal:
 
-![quantum-normal-mlfq](imagenes/mlfqnormal.jpg "MLFQ quantum normal")
+![quantum-normal-mlfq](imagenes/mlfq_normal.jpg "MLFQ quantum normal")
 
-* 
+* *Quantum* 10 veces menor:
 
-![quantum-normal-rr](imagenes/mlf10less.jpg "MLFQ quantum 10 veces menor")
+![quantum-normal-rr](imagenes/mlfq_10less.jpg "MLFQ quantum 10 veces menor")
 
 * *Quantum* 100 veces menor:
 
-![quantum-normal-rr](imagenes/mlf100less.jpg "MLFQ quantum 100 veces menor")
-
-Similarmente a lo que sucedia con el planificador *round-robin* en los casos en que se reduce el *quantum* las mediciones de `cpubench` son tan bajas que prácticamente no se pueden observar en los gráficos. También se puede observar que con el *quantum* normal el planificador MLFQ tiene mejores mediciones en cuanto a `iobench` pero que mientras más se reduce el quantum más empeora el desempeño del mismo con respecto al planificador *round-robin*.
+![quantum-normal-rr](imagenes/mlfq_100less.jpg "MLFQ quantum 100 veces menor")
 
 ## Respuesta 3
 
@@ -393,7 +391,6 @@ Finalmente, a pesar de que no se indica en la consigna, decidimos hacer una medi
 
 ![quantum-100-menor-mlfq-estrella](imagenes/mlfq_estrella_100less.jpg "MLFQ estrella quantum 100 veces menor")
 
-Se puede observar que sucede lo mismo que con los planificadores anteriores, es decir que al disminuir el *quantum* las mediciones de `cpubench` son tan bajas que no se ven en el gráfico, sin embargo también se puede observar una considerable mejora en las mediciones de `iobench`, igualmente en las mediciones de `cpubench` que se pueden observar en el primer gráfico del *quantum* normal.
 
 ---
 
