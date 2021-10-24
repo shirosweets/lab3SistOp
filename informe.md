@@ -258,12 +258,12 @@ Cada vez que eliminábamos un 0 del *quantum* para hacer una medición, en los a
 
     Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en promedio cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de jupyter notebooks que tiene el código con el cuál se realizaron los gráficos.
 
-A continuación están los gráficos para cada *quantum*, a la izquierda del el scheduler original de xv6 y a la derecha de nuestro MLFQ:
+A continuación están los gráficos para cada *quantum*, a la izquierda el del scheduler original de `xv6` y a la derecha de nuestro MLFQ:
 
 | ![quantumnormalrr](imagenes/rr_normal.jpg "Round robin quantum normal") | ![quantumnormalmlfq](imagenes/mlfq_normal.jpg "MLFQ quantum normal") |
 | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| ![quantum10menorrr](imagenes/rr_10less.jpg "Round Robin quantum 10 veces menor")                                                       | ![quantum-normal-rr](imagenes/mlfq_10less.jpg "MLFQ quantum 10 veces menor")                                               |
-| ![quantum100menorrr](imagenes/rr_100less.jpg "Round Robin quantum 100 veces menor")                                                     | ![quantum-normal-rr](imagenes/mlfq_100less.jpg "MLFQ quantum 100 veces menor")                                             |
+| ![quantum10menorrr](imagenes/rr_10less.jpg "Round Robin quantum 10 veces menor")                                                       | ![quantum-10menor-mlfq](imagenes/mlfq_10less.jpg "MLFQ quantum 10 veces menor")                                               |
+| ![quantum100menorrr](imagenes/rr_100less.jpg "Round Robin quantum 100 veces menor")                                                     | ![quantum-100menor-mlfq](imagenes/mlfq_100less.jpg "MLFQ quantum 100 veces menor")                                             |
 
 ### Análisis
 
@@ -284,6 +284,7 @@ A continuación están los gráficos para cada *quantum*, a la izquierda del el 
     5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
+    <br>
   
     - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 

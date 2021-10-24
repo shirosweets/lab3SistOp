@@ -32,31 +32,32 @@ poder de cómputo, respectivamente.
 **Importante** : Aunque `xv6` soporta múltiples procesadores, debemos ejecutar nuestras mediciones(`iobench` y `cpubench`) lanzando la máquina virtual con un único procesador. (i.e. `make CPUS=1 qemu-nox`)
 
 1. Mida la respuesta de I/O y el poder de cómputo obtenido para las distintas combinaciones posibles entre 0 y 2 `iobench` junto con entre 0 y 2 `cpubench`, y grafique los resultados en el informe.
-
+    <br>
 
     **Caso 0**: 1 `iobench`
-
+    <br>
 
     **Caso 1**: 1 `iobench` 1 `cpubench` 
-
+    <br>
 
     **Caso 2**: 1 `iobench` 2 `cpubench`
-
+    <br>
 
     **Caso 3**: 1 `cpubench`
-
+    <br>
 
     **Caso 4**: 1 `cpubench` 2 `iobench`
-
+    <br>
 
     **Caso 5**: 2 `cpubench` 2 `iobench`
-
+    <br>
 
     **Caso 6**: 2 `cpubench`
-
+    <br>
 
     **Caso 7**: 2 `iobench`
-
+    <br>
+    
 2. Repita el experimento para *quantums* 10, 100 y 1000 veces más cortos. Tenga en cuenta que modificar el *tick* afecta el funcionamiento de `iobench` y
 `cpubench` , o sea que quizás necesite modificarlos para que mantengan un funcionamiento similar para que se puedan comparar los resultados en los
 distintos escenarios de prueba.
@@ -116,7 +117,7 @@ Finalmente implementar la planificación propiamente dicha para que nuestro `xv6
     5. (Muy difícil) Y si no quisiéramos usar los ticks periódicos del timer por el problema de (1), ¿qué haríamos? Investigue cómo funciona e implemente un tickless kernel.
 
 * De las herramientas de medición:
-    
+    <br>
 
     * Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
