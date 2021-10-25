@@ -38,7 +38,7 @@
   - [*Quantum* distinto por prioridad](#quantum-distinto-por-prioridad)
   - [Priority Boost de OSTEP](#priority-boost-de-ostep)
 - [Mediciones MLFQ final](#mediciones-mlfq-final)
-    - [Análisis](#análisis-1)
+  - [Análisis](#análisis-1)
 
 ---
 
@@ -257,7 +257,7 @@ Las versiones exactas en las que hicimos las mediciones están etiquetadas en el
 
 Cada vez que eliminábamos un 0 del *quantum* para hacer una medición, en los archivos `cpubench` e `iobench` aumentábamos por un cero la variable `MINTICKS` para que de esta manera los programas corran durante la misma cantidad de tiempo antes de imprimir un resultado.
 
-Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en **promedio** cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el script  que tiene el código con el cuál se realizaron los gráficos.
+Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en **promedio** cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el script que tiene el código con el cuál se realizaron los gráficos.
 
 A continuación están los gráficos para cada *quantum*, a la izquierda el del scheduler original de `xv6` y a la derecha de nuestro MLFQ:
 
@@ -268,13 +268,13 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 ### Análisis
 
-En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el **round robin**, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante **5 minutos**, lo cual para *quantum* normal y 10 veces más corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza para tantas mediciones (por lo general sólo devolvía 1/2 de mediciones para CPU).
+En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el **round robin**, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante **5 minutos**, lo cual para *quantum* normal y 10 veces más corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza para tantas mediciones (por lo general sólo devolvía 1 ó 2 de mediciones para CPU).
 
 Otra cosa interesante es saber cual planificador es más eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso.
 
 Mirando el código es difícil saber, ya que el MLFQ tiene menos código para elegir un proceso, pero tiene que andar encolando y descolando a los procesos.
 
-La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK llega con un solo `cpubench` en cada uno, y a cuantos IO/TICK llega con un solo `iobench`  en cada uno, ambas cosas para *quantum* normal y para *quentum* 10 veces más corto (para 100 veces más corto no por lo tomamos en cuenta debido a la imprecisión de los datos).
+La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK llega con un solo `cpubench` en cada uno, y a cuantos IO/TICK llega con un solo `iobench`  en cada uno, ambas cosas para *quantum* normal y para *quantum* 10 veces más corto (para 100 veces más corto no por lo tomamos en cuenta debido a la imprecisión de los datos).
 
 En esta tabla están esos datos:
 
@@ -287,7 +287,7 @@ En esta tabla están esos datos:
 
 Como se puede ver, no hay demasiada diferencia en estos datos, en 3 de los casos le fue mejor a round robin y en 1 al MLFQ.
 
-La mayor diferencia está en `1 iobench` con *quantum* normal (21.6 %), que es el caso en el que posiblemente se shedulee más veces por tick (si se hacen una 8 operaciones por tick, se shedulea unas 8 veces por tick por lo menos, porque cada ves que se inicia un IO request se shedulea). En el caso del `cpubench` solo se shedulea una vez por tick, por lo que el tiempo de sheduleo posiblemente sea mucho más insignificante.
+La mayor diferencia está en 1 `iobench` con *quantum* normal (21.6 %), que es el caso en el que posiblemente se schedulee (llamando schedulear al proceso de que el scheduler tenga que elegir un proceso para correr) más veces por tick (si se hacen una 8 operaciones por tick, se schedulea unas 8 veces por tick por lo menos, porque cada ves que se inicia un IO request se schedulea). En el caso del `cpubench` solo se schedulea una vez por tick, por lo que el tiempo de scheduleo posiblemente sea mucho más insignificante.
 
 # Puntos estrellas
 
@@ -371,9 +371,7 @@ Colas después del priority boost:
 
 ![queue-after-boost](imagenes/queue-after-boost_v2.jpg "queues after priority boost")
 
-Cuando se hace el **priority boost**, `queue_first[0]` se queda como está, `queue_last[0]` pasa a ser lo que antes era `queue_last[2]`, y `queue_first[1]`, `queue_last[1]`, `queue_first[2]` y `queue_last[2]` pasan a ser `NULL`.
-
-Después del **priority boost** `queue_first[1]`, `queue_last[1]`, `queue_first[2]` y `queue_last[2]` no apuntan a esos elementos, si no que, esos elementos son los que antes eran apuntados por esas variables
+Cuando se hace el **priority boost**, `queue_first[0]` se queda como está, `queue_last[0]` pasa a ser lo que antes era `queue_last[NPRIO]` (salvo en algunos casos vorde) y `queue_first[i]` y `queue_last[i]` para `1 ≤ i < NPRIO` pasan a ser `NULL`.
 
 ```c
 // Set to NULL pointers to the other queues
@@ -405,7 +403,7 @@ En estos gráficos se puede ver que con *quantums* largos a los `iobench` les fu
 
 Notamos que cuando el ***quantum* es largo** y las **operaciones IO** se demoran menos de lo que dura el *quantum*, los procesos `iobench` se acaban bajando de prioridad bastante rápido y están la mayor parte del tiempo en la prioridad mínima junto con los `cpubench`.
 
-Cuando el ***quantum* es más corto**, y las **operaciones IO** se demoran muchos *quantums* en cambio, los procesos `iobench` si están mucho más en la proridad más alta, mientras que los `cpubench` bajan.
+Cuando el ***quantum* es más corto**, y las **operaciones IO** se demoran muchos *quantums* en cambio, los procesos `iobench` si están mucho más en la prioridad más alta, mientras que los `cpubench` bajan.
 
 El porque pasa eso no lo tenemos del todo claro, pero creemos que debe tener que ver con que si los `iobench` están en prioridad más alta, se los elige más y cuando hay una interrupción por tiempo, siempre el proceso que está corriendo es un `iobench` (cuando hay una interrupción por tiempo se baja la prioridad del `iobench`).
 
