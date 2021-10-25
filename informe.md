@@ -255,7 +255,7 @@ Las versiones exactas en las que hicimos las mediciones están etiquetadas en el
 
 Cada vez que eliminábamos un 0 del *quantum* para hacer una medición, en los archivos `cpubench` e `iobench` aumentábamos por un cero la variable `MINTICKS` para que de esta manera los programas corran durante la misma cantidad de tiempo antes de imprimir un resultado.
 
-Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en promedio cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de jupyter notebooks que tiene el código con el cuál se realizaron los gráficos.
+Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en **promedio** cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de jupyter notebooks que tiene el código con el cuál se realizaron los gráficos.
 
 A continuación están los gráficos para cada *quantum*, a la izquierda el del scheduler original de `xv6` y a la derecha de nuestro MLFQ:
 
@@ -266,7 +266,18 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 ### Análisis
 
-…
+En los gráficos se puede ver que cuando hay CPU e IO mesclados a los IO les va mucho mejor con el MLFQ que con el round robing, lo cual es lo esperado. En el caso del quantum 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante 5 minutos, lo cual para quantum normal y 10 veces mas corto alcanza para un montón de mediciones, pero para el 100 veces mas corto no alcanza para tantas mediciones.
+
+Otra cosa interesante es saber cual planificador es mas eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso. La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK llega con un solo `cpubench` en cada uno, y a cuantos IO/TICK llega con un solo `iobench`  en cada uno, ambas cosas para quantum normal y para quentum 10 veces mas corto (para 100 veces mas corto no por lo de que son muy imprecisos los datos).
+
+En esta tabla están esos datos:
+
+|                                |                                   | Round robing | MLFQ |
+| ------------------------------ | --------------------------------- | ------------ | ---- |
+| Quantum<br/>normal             | KFLO/TICK<br/>(caso 1 `cpubench`) |              |      |
+|                                | IO/TICK<br/>(caso 1 `iobench`)    |              |      |
+| Quantum 10<br/>veces mas corto | KFLO/TICK<br/>(caso 1 `cpubench`) |              |      |
+|                                |                                   |              |      |
 
 # Puntos estrellas
 
