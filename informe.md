@@ -34,7 +34,6 @@
     - [Extraer_archivos.sh](#extraer_archivossh)
   - [Mediciones](#mediciones)
     - [Análisis](#análisis)
-- [En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el **round robin**, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante **5 minutos**, lo cual para *quantum* normal y 10 veces más corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza para tantas mediciones (por lo general sólo devolvía 1/2 de mediciones para CPU).](#en-los-gráficos-se-puede-ver-que-cuando-hay-cpu-e-io-mezclados-a-los-io-les-va-mucho-mejor-con-el-mlfq-que-con-el-round-robin-lo-cual-es-lo-esperado-en-el-caso-del-quantum-100-veces-menor-los-datos-se-ven-un-poco-raros-lo-cuál-posiblemente-se-deba-a-que-nosotros-hicimos-todas-les-mediciones-dejando-correr-a-los-programas-durante-5-minutos-lo-cual-para-quantum-normal-y-10-veces-más-corto-alcanza-para-un-montón-de-mediciones-pero-para-el-100-veces-más-corto-no-alcanza-para-tantas-mediciones-por-lo-general-sólo-devolvía-12-de-mediciones-para-cpu)
 - [Puntos estrellas](#puntos-estrellas)
   - [*Quantum* distinto por prioridad](#quantum-distinto-por-prioridad)
   - [Priority Boost de OSTEP](#priority-boost-de-ostep)
@@ -269,11 +268,7 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 ### Análisis
 
-<<<<<<< HEAD
 En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el **round robin**, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante **5 minutos**, lo cual para *quantum* normal y 10 veces más corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza para tantas mediciones (por lo general sólo devolvía 1/2 de mediciones para CPU).
-=======
-En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el round robin, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante 5 minutos, lo cual para *quantum* normal y 10 veces mas corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza por lo general sólo devolvía 1/2 mediciones para CPU.
->>>>>>> ac28aca5dcc7572368a42ed1d2c22574d29e3363
 
 Otra cosa interesante es saber cual planificador es más eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso.
 
