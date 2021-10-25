@@ -111,11 +111,11 @@ Ese `10000000` es lo que se setea, si son la cantidad de clocks para hacer una i
 
 Ejemplo: En un procesador con una velocidad de `900MHz` se producen 900 millones de clocks por segundo, lo que quiere decir que `10000000` de clocks se hacen en aproximadamente 0.0111 segundos que es aproximadamente una centésima de segundo.
 
-Mas adelante, cuando hablamos de las mediciones llamamos quantum a ese número y hablamos de achicarlo y agrandarlo.
+Mas adelante, cuando hablamos de las mediciones llamamos *quantum* a ese número y hablamos de achicarlo y agrandarlo.
 
 ### Respuesta 2b
 
-En el xv6 original el quantum dura siempre lo mismo, sin embargo, no necesariamente los procesos se ejecutan de forma consecutiva durante un quantum completo, ya que puede pasar que un proceso deje de ejecutarse a la mitad del quantum (por ejemplo porque inicio una lectura al sistema de archivos), y en ese caso lo que pasa es que se elige otro proceso para correr, pero solo corre hasta que que pasan `10000000` clocks desde que se eligió el primer proceso, no el segundo. Esto es porque las interrupciones por tiempo ocurren siempre cada `10000000` clocks, sin importar cuantos clocks lleva corriendo el proceso actual.
+En el xv6 original el *quantum* dura siempre lo mismo, sin embargo, no necesariamente los procesos se ejecutan de forma consecutiva durante un *quantum* completo, ya que puede pasar que un proceso deje de ejecutarse a la mitad del *quantum* (por ejemplo porque inicio una lectura al sistema de archivos), y en ese caso lo que pasa es que se elige otro proceso para correr, pero solo corre hasta que que pasan `10000000` clocks desde que se eligió el primer proceso, no el segundo. Esto es porque las interrupciones por tiempo ocurren siempre cada `10000000` clocks, sin importar cuantos clocks lleva corriendo el proceso actual.
 
 # Rastreando la prioridad de los procesos
 
@@ -203,7 +203,7 @@ Es importante observar que en esta implementación siempre que se acaba el quent
 
 ## Starvation
 
-En la consigna se pregunta si se puede producir `starvation` en el nuevo planificador, y la respuesta es que si, porque si hay un proceso largo `IO bound`, o si hay varios procesos IO bound, con la política de ascensión que se implementó cada vez que se bloquea un proceso se le sube la prioridad, es decir que un proceso que devuelva el control al kernel antes de que termine el quantum ya que se bloquea siempre se va a mantener en la prioridad más alta, por lo que los procesos que estén en la prioridad más baja nunca tienen oportunidad de correr.
+En la consigna se pregunta si se puede producir `starvation` en el nuevo planificador, y la respuesta es que si, porque si hay un proceso largo `IO bound`, o si hay varios procesos IO bound, con la política de ascensión que se implementó cada vez que se bloquea un proceso se le sube la prioridad, es decir que un proceso que devuelva el control al kernel antes de que termine el *quantum* ya que se bloquea siempre se va a mantener en la prioridad más alta, por lo que los procesos que estén en la prioridad más baja nunca tienen oportunidad de correr.
 
 # Mediciones y comparaciones entre los schedulers
 
@@ -266,7 +266,7 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 ### Análisis
 
-En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el round robin, lo cual es lo esperado. En el caso del quantum 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante 5 minutos, lo cual para quantum normal y 10 veces mas corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza por lo general sólo devolvia 1/2 mediciones para CPU.
+En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el round robin, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante 5 minutos, lo cual para *quantum* normal y 10 veces mas corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza por lo general sólo devolvia 1/2 mediciones para CPU.
 
 Otra cosa interesante es saber cual planificador es mas eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso.
 
@@ -276,16 +276,16 @@ La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK
 
 En esta tabla están esos datos:
 
-|                                | Caso                         | Round robing | MLFQ simple |
-| ------------------------------ | ---------------------------- | ------------ | ----------- |
-| *Quantum *normal             | KFLO/TICK (1 `cpubench`) | 210.71       | 214.55      |
-|                                | IO/TICK (1 `iobench`)    | 8.2594       | 6.7898      |
+|                              | Caso                     | Round robing | MLFQ simple |
+| ---------------------------- | ------------------------ | ------------ | ----------- |
+| *Quantum* normal             | KFLO/TICK (1 `cpubench`) | 210.71       | 214.55      |
+|                              | IO/TICK (1 `iobench`)    | 8.2594       | 6.7898      |
 | *Quantum* 10 veces mas corto | KFLO/TICK (1 `cpubench`) | 18.701       | 17.925      |
-|                                | IO/TICK (1 `iobench`)    | .76522       | .75951      |
+|                              | IO/TICK (1 `iobench`)    | .76522       | .75951      |
 
 Como se puede ver, no hay demasiada diferencia en estos datos, en 3 de los casos le fue mejor a round robin y en 1 al MLFQ.
 
-La mayor diferencia está en 1 `iobench` con quantum normal (21.6 %), que es el caso en el que posiblemente el scheduler lo seleccione más veces por tick (si se hacen una 8 operaciones por tick, se coloca en el scheduler unas 8 veces por tick por lo menos, porque cada vez que se inicia un IO request se coloca en el scheduler). En el caso del `cpubench` solo lo selecciona el scheduler una vez por tick, por lo que el tiempo de planificación posiblemente sea mucho más insignificante.
+La mayor diferencia está en 1 `iobench` con *quantum* normal (21.6 %), que es el caso en el que posiblemente el scheduler lo seleccione más veces por tick (si se hacen una 8 operaciones por tick, se coloca en el scheduler unas 8 veces por tick por lo menos, porque cada vez que se inicia un IO request se coloca en el scheduler). En el caso del `cpubench` solo lo selecciona el scheduler una vez por tick, por lo que el tiempo de planificación posiblemente sea mucho más insignificante.
 
 # Puntos estrellas
 
@@ -305,7 +305,7 @@ La mayor diferencia está en 1 `iobench` con quantum normal (21.6 %), que es el 
   
   - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
-## Quantum distinto por prioridad
+## *quantum* distinto por prioridad
 
 En el planificador original de `xv6` un *quantum* mide lo mismo que un tick del sistema, el cual esta definido en `lapic.c` y el cual dura 10 millones de clocks del procesador, cada vez que se aumenta el tick de `xv6` es porque ocurrió una interrupción por tiempo. En `trap.c` se encuentra este fragmento de código:
 
@@ -320,11 +320,11 @@ Es decir que cada vez que hay una interrupción por tiempo el proceso devuelve e
 
 Decidimos que el *quantum* de cada prioridad sería de la siguiente manera:
 
-| Prioridad | Quantum |
-| --------- | ------- |
-| 0         | 1 tick  |
-| 1         | 2 ticks |
-| 2         | 4 ticks |
+| Prioridad | *quantum* |
+| --------- | --------- |
+| 0         | 1 tick    |
+| 1         | 2 ticks   |
+| 2         | 4 ticks   |
 
 Es decir para cada prioridad su *quantum* sería igual a 2^prioridad.
 
