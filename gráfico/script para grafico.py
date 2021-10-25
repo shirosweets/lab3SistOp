@@ -119,7 +119,7 @@ def grafico(path, title, sabefile):
   ax.set_ylabel("KFLO/TICKS")
   #twin1.set_ylim(0, 200)
   twin1.set_ylabel("IO/TICKS")
-  ax.set_title("title")
+  ax.set_title(title)
   ax.grid(zorder=0)
   ax.set_axisbelow(True)
   twin1.set_axisbelow(True)
@@ -138,15 +138,15 @@ def grafico(path, title, sabefile):
 
 def graficar_todo():
   graficos_para_hacer = [
-    ("../Mediciones/round robin/quantum_100less",          "Round robing\nQuantum 100 veces mas corto",  "rr_100less.jpg"           ),
-    ("../Mediciones/round robin/quantum_10less",           "Round robing\nQuantum 10 veces mas corto",   "rr_10less.jpg"            ),
-    ("../Mediciones/round robin/quantum_normal",           "Round robing\nQuantum normal",               "rr_normal.jpg"            ),
-    ("../Mediciones/mlfq/quantum_100less",                 "MLFQ normal\nQuantum 100 veces mas corto",   "mlfq_100less.jpg"         ),
-    ("../Mediciones/mlfq/quantum_10less",                  "MLFQ normal\nQuantum 10 veces mas corto",    "mlfq_10less.jpg"          ),
-    ("../Mediciones/mlfq/quantum_normal",                  "MLFQ normal\nQuantum normal",                "mlfq_normal.jpg"          ),
-    ("../Mediciones/mlfq_puntos_estrella/quantum_100less", "MLFQ mejorado\nQuantum 100 veces mas corto", "mlfq_estrella_100less.jpg"),
-    ("../Mediciones/mlfq_puntos_estrella/quantum_10less",  "MLFQ mejorado\nQuantum 10 veces mas corto",  "mlfq_estrella_10less.jpg" ),
-    ("../Mediciones/mlfq_puntos_estrella/quantum_normal",  "MLFQ mejorado\nQuantum normal",              "mlfq_estrella_normal.jpg" )
+    ("../Mediciones/round robin/quantum_100_less/",          "Round robing\nQuantum 100 veces mas corto",  "rr_100less.jpg"           ),
+    ("../Mediciones/round robin/quantum_10_less/",           "Round robing\nQuantum 10 veces mas corto",   "rr_10less.jpg"            ),
+    ("../Mediciones/round robin/quantum_normal/",           "Round robing\nQuantum normal",               "rr_normal.jpg"            ),
+    ("../Mediciones/mlfq/quantum_100_less/",                 "MLFQ normal\nQuantum 100 veces mas corto",   "mlfq_100less.jpg"         ),
+    ("../Mediciones/mlfq/quantum_10_less/",                  "MLFQ normal\nQuantum 10 veces mas corto",    "mlfq_10less.jpg"          ),
+    ("../Mediciones/mlfq/quantum_normal/",                  "MLFQ normal\nQuantum normal",                "mlfq_normal.jpg"          ),
+    ("../Mediciones/mlfq_puntos_estrella/quantum_100_less/", "MLFQ mejorado\nQuantum 100 veces mas corto", "mlfq_estrella_100less.jpg"),
+    ("../Mediciones/mlfq_puntos_estrella/quantum_10_less/",  "MLFQ mejorado\nQuantum 10 veces mas corto",  "mlfq_estrella_10less.jpg" ),
+    ("../Mediciones/mlfq_puntos_estrella/quantum_normal/",  "MLFQ mejorado\nQuantum normal",              "mlfq_estrella_normal.jpg" )
   ]
 
   for path, title, sabefile in graficos_para_hacer:
