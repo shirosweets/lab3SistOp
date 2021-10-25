@@ -143,9 +143,9 @@ def grafico(path, title, sabefile):
 
 
 graficos_para_hacer = [
-  ("../Mediciones/round robin/quantum_100_less/",          "Round robing\nQuantum 100 veces mas corto",      "../imagenes/rr_100less.jpg"           ),
-  ("../Mediciones/round robin/quantum_10_less/",           "Round robing\nQuantum 10 veces mas corto",       "../imagenes/rr_10less.jpg"            ),
-  ("../Mediciones/round robin/quantum_normal/",            "Round robing\nQuantum normal",                   "../imagenes/rr_normal.jpg"            ),
+  ("../Mediciones/round robin/quantum_100_less/",          "Round robin\nQuantum 100 veces mas corto",       "../imagenes/rr_100less.jpg"           ),
+  ("../Mediciones/round robin/quantum_10_less/",           "Round robin\nQuantum 10 veces mas corto",        "../imagenes/rr_10less.jpg"            ),
+  ("../Mediciones/round robin/quantum_normal/",            "Round robin\nQuantum normal",                    "../imagenes/rr_normal.jpg"            ),
   ("../Mediciones/mlfq/quantum_100_less/",                 "MLFQ simple\nQuantum 100 veces mas corto",       "../imagenes/mlfq_100less.jpg"         ),
   ("../Mediciones/mlfq/quantum_10_less/",                  "MLFQ simple\nQuantum 10 veces mas corto",        "../imagenes/mlfq_10less.jpg"          ),
   ("../Mediciones/mlfq/quantum_normal/",                   "MLFQ simple\nQuantum normal",                    "../imagenes/mlfq_normal.jpg"          ),
@@ -169,4 +169,4 @@ def imprimir_promedios():
     print(path, ":")
     imprimir_promedio(path)
 
-imprimir_promedios()
+graficar_todo()
