@@ -268,16 +268,24 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 En los gráficos se puede ver que cuando hay CPU e IO mesclados a los IO les va mucho mejor con el MLFQ que con el round robing, lo cual es lo esperado. En el caso del quantum 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante 5 minutos, lo cual para quantum normal y 10 veces mas corto alcanza para un montón de mediciones, pero para el 100 veces mas corto no alcanza para tantas mediciones.
 
-Otra cosa interesante es saber cual planificador es mas eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso. La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK llega con un solo `cpubench` en cada uno, y a cuantos IO/TICK llega con un solo `iobench`  en cada uno, ambas cosas para quantum normal y para quentum 10 veces mas corto (para 100 veces mas corto no por lo de que son muy imprecisos los datos).
+Otra cosa interesante es saber cual planificador es mas eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso.
+
+Mirando el código es difícil saber, ya que el MLFQ tiene menos código para elegir un proceso, pero tiene que andar encolando y descolando a los procesos.
+
+La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK llega con un solo `cpubench` en cada uno, y a cuantos IO/TICK llega con un solo `iobench`  en cada uno, ambas cosas para quantum normal y para quentum 10 veces mas corto (para 100 veces mas corto no por lo de que son muy imprecisos los datos).
 
 En esta tabla están esos datos:
 
-|                                |                                   | Round robing | MLFQ |
-| ------------------------------ | --------------------------------- | ------------ | ---- |
-| Quantum<br/>normal             | KFLO/TICK<br/>(caso 1 `cpubench`) |              |      |
-|                                | IO/TICK<br/>(caso 1 `iobench`)    |              |      |
-| Quantum 10<br/>veces mas corto | KFLO/TICK<br/>(caso 1 `cpubench`) |              |      |
-|                                |                                   |              |      |
+|                                | Caso                         | Round robing | MLFQ simple |
+| ------------------------------ | ---------------------------- | ------------ | ----------- |
+| Quantum<br/>normal             | KFLO/TICK<br/>(1 `cpubench`) | 210.71       | 214.55      |
+|                                | IO/TICK<br/>(1 `iobench`)    | 8.2594       | 6.7898      |
+| Quantum 10<br/>veces mas corto | KFLO/TICK<br/>(1 `cpubench`) | 18.701       | 17.925      |
+|                                | IO/TICK<br/>(1 `iobench`)    | .76522       | .75951      |
+
+Como se puede ver, no hay demasiada diferencia en estos datos, en 3 de los casos le fue mejor a round robing y en 1 al MLFQ.
+
+La mayor diferencia está en 1 `iobench` con quantum normal (21.6 %), que es el caso en el que posiblemente se shedulee mas veces por tick (si se hacen una 8 operaciones por tick, se shedulea unas 8 veces por tick por lo menos, porque cada ves que se inicia un IO request se shedulea). En el caso del `cpubench` solo se shedulea una vez por tick, por lo que el tiempo de sheduleo posiblemente sea mucho mas insignificante.
 
 # Puntos estrellas
 
@@ -294,8 +302,8 @@ En esta tabla están esos datos:
   5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
-
-    - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
+  
+  - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ## Quantum distinto por prioridad
 
@@ -377,7 +385,13 @@ Finalmente, a pesar de que no se indica en la consigna, decidimos hacer una medi
 
 ### Análisis
 
-…
+En estos gráficos se puede ver que con quantums largos a los `iobench` les fue peor que con el otro MLFQ, pero con quantums cortos les fue mejor. Esto no sabemos con exactitud porque es, pero tenemos alguna idea:
+
+Notamos que cuando el quantum es largo y las operaciones IO se demoran menos de lo que dura el quantum, los procesos `iobench` se acaban bajando de prioridad bastante rápido y están la mayor parte del tiempo en la prioridad mínima junto con los `cpubench`. 
+
+Cuando el quantum es mas corto, y las operaciones IO se demoran muchos quantums en cambio, los procesos `iobench` si están mucho mas en la proridad mas alta, mientras que los `cpubench` bajan.
+
+El porque pasa eso no lo tenemos del todo claro, pero creemos que debe tener que ver con que si los `iobench` están en prioridad mas alta, se los elige mas y cuando hay una interrupción por tiempo, siempre el proceso que está corriendo es un `iobench` (cuando hay una interrupción por tiempo se baja la prioridad del `iobench`).
 
 ---
 
