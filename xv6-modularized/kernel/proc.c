@@ -550,9 +550,6 @@ sleep(void *chan, struct spinlock *lk)
   p->chan = chan;
   p->state = SLEEPING;
 
-  // Asciende la prioridad del scheduler
-  // p->priority -= (p->priority == 0) ? 0 : 1;
-
   sched();
 
   // Tidy up.
