@@ -13,30 +13,31 @@
 # Contenido
 
 - [Entendiendo el planificador original de xv6](#entendiendo-el-planificador-original-de-xv6)
-    - [Pregunta 1](#pregunta-1)
-        - [Respuesta 1](#respuesta-1)
-    - [Pregunta 2](#pregunta-2)
-        - [Respuesta 2a](#respuesta-2a)
-        - [Respuesta 2b](#respuesta-2b)
+  - [Pregunta 1](#pregunta-1)
+    - [Respuesta 1](#respuesta-1)
+  - [Pregunta 2](#pregunta-2)
+    - [Respuesta 2a](#respuesta-2a)
+    - [Respuesta 2b](#respuesta-2b)
 - [Rastreando la prioridad de los procesos](rastreando-la-prioridad-de-los-procesos)
-    - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
-    - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
+  - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
+  - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Implementando MLFQ](#implementando-mlfq)
-    - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
-    - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
-    - [Starvation](#starvation)
+  - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
+  - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
+  - [Starvation](#starvation)
 - [Mediciones y comparaciones entre los schedulers](#mediciones-y-comparaciones-entre-los-schedulers)
-    - [Cómo el planificador afecta a los procesos](#cómo-el-planificador-afecta-a-los-procesos)
-    - [Automatizado de testeos](#automatizado-de-testeos)
-        - [AutoMed.sh](#automedsh)
-        - [Extraer_archivos.sh](#extraerarchivossh)
-    - [Mediciones](#mediciones)
-        - [Análisis](#análisis)
-- [Puntos estrellas](#puntos-estrellas)
-    - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
-    - [Priority Boost de OSTEP](#priority-boost-de-ostep)
-- [Mediciones MLFQ final](#mediciones-mlfq-final)
+  - [Cómo el planificador afecta a los procesos](#cómo-el-planificador-afecta-a-los-procesos)
+  - [Automatizado de testeos](#automatizado-de-testeos)
+    - [AutoMed.sh](#automedsh)
+    - [Extraer_archivos.sh](#extraerarchivossh)
+  - [Mediciones](#mediciones)
     - [Análisis](#análisis)
+- [Puntos estrellas](#puntos-estrellas)
+  - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
+  - [Priority Boost de OSTEP](#priority-boost-de-ostep)
+- [Mediciones MLFQ final](#mediciones-mlfq-final)
+  - [Análisis](#análisis)
+
 ---
 
 # Entendiendo el planificador original de xv6
@@ -50,9 +51,9 @@
 
 ### Respuesta 1
 
-    La política que utiliza el `xv6` es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado denominado *quantum*.
+La política que utiliza el `xv6` es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado denominado *quantum*.
 
-    El round robin de xv6 funciona teniendo todos los procesos en una tabla de procesos, y recorriendo esa tabla ejecutando cada ves al siguiente proceso.
+El round robin de xv6 funciona teniendo todos los procesos en una tabla de procesos, y recorriendo esa tabla ejecutando cada ves al siguiente proceso.
 
 ```c
 void
@@ -106,15 +107,15 @@ Cada vez que hay una interrupción por tiempo, el proceso que está corriendo le
 lapicw(TICR, 10000000);
 ```
 
-    Ese `10000000` es lo que se setea, si son la cantidad de clocks para hacer una interrupción por tiempo, la velocidad a la que se hacen los clocks depende el procesador.
+Ese `10000000` es lo que se setea, si son la cantidad de clocks para hacer una interrupción por tiempo, la velocidad a la que se hacen los clocks depende el procesador.
 
 Ejemplo: En un procesador con una velocidad de `900MHz` se producen 900 millones de clocks por segundo, lo que quiere decir que `10000000` de clocks se hacen en aproximadamente 0.0111 segundos que es aproximadamente una centésima de segundo.
 
-    Mas adelante, cuando hablamos de las mediciones llamamos quantum a ese número y hablamos de achicarlo y agrandarlo.
+Mas adelante, cuando hablamos de las mediciones llamamos quantum a ese número y hablamos de achicarlo y agrandarlo.
 
 ### Respuesta 2b
 
-    En el xv6 original el quantum dura siempre lo mismo, sin embargo, no necesariamente los procesos se ejecutan de forma consecutiva durante un quantum completo, ya que puede pasar que un proceso deje de ejecutarse a la mitad del quantum (por ejemplo porque inicio una lectura al sistema de archivos), y en ese caso lo que pasa es que se elige otro proceso para correr, pero solo corre hasta que que pasan `10000000` clocks desde que se eligió el primer proceso, no el segundo. Esto es porque las interrupciones por tiempo ocurren siempre cada `10000000` clocks, sin importar cuantos clocks lleva corriendo el proceso actual.
+En el xv6 original el quantum dura siempre lo mismo, sin embargo, no necesariamente los procesos se ejecutan de forma consecutiva durante un quantum completo, ya que puede pasar que un proceso deje de ejecutarse a la mitad del quantum (por ejemplo porque inicio una lectura al sistema de archivos), y en ese caso lo que pasa es que se elige otro proceso para correr, pero solo corre hasta que que pasan `10000000` clocks desde que se eligió el primer proceso, no el segundo. Esto es porque las interrupciones por tiempo ocurren siempre cada `10000000` clocks, sin importar cuantos clocks lleva corriendo el proceso actual.
 
 # Rastreando la prioridad de los procesos
 
@@ -122,15 +123,15 @@ Habiendo visto las propiedades del planificador existente, reemplazarlo con un p
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre `0` y `NPRIO-1` para `#define NPRIO 3` niveles en total) y manténgala actualizada según el comportamiento del proceso:
    
-    * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
+   * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
    
-    * MLFQ regla 4:
+   * MLFQ regla 4:
      
-        * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
+     * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
      
-        * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
+     * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
        
-        > Nota: Este comportamiento es distinto al del MLFQ del libro.
+       > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
 2. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
 
@@ -175,8 +176,8 @@ Finalmente implementar la planificación propiamente dicha para que nuestro `xv6
 
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
    
-    * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
-    * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en *round-robin* por el *quantum* determinado.
+   * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
+   * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en *round-robin* por el *quantum* determinado.
 
 2. Repita las mediciones de la segunda parte para ver las propiedades del nuevo planificador.
 
@@ -242,28 +243,26 @@ Lo que hace es tener una lista de los archivos que tiene que extraer, y para cad
 
 Para generar los comandos que hay que ejecutar y los nombres de los archivos que hay que extraer usamos un pequeño archivo de haskell `Generador_listas.hs`, en donde `comandos_test` son los comandos y `archivos_test` los archivos.
 
-
-
 Para usar los scripts hay que, desde la carpeta `xv6-modularized`, después de haber hecho un `make qemu` para que se compile `xv6`, hacer `bash ../Automatizar_mediciones/AutoMed.sh` para correr los test y después `bash ../Automatizar_mediciones/Extrear_archivos.sh` para extraer los archivos.
 
 ## Mediciones
 
 En la consigna se pide hacer mediciones con distintas cantidades de `iobench` y `cpubench` y usando el *quantum* normal, 10 , 100 y 1000 veces menor para el `scheduler` original y el nuestro antes de hacer los puntos estrellas (y opcionalmente después, ahora vamos a hacer la comparación entre esos 2).
 
-    A las mediciones con 1000 veces menor decidimos no realizarlo ya que el `xv6` se vuelve tan lento que hace falta mucho tiempo para obtener alguna medición y mucho mas todavía para obtener muchas mediciones como para que sea mas preciso.
+A las mediciones con 1000 veces menor decidimos no realizarlo ya que el `xv6` se vuelve tan lento que hace falta mucho tiempo para obtener alguna medición y mucho mas todavía para obtener muchas mediciones como para que sea mas preciso.
 
-    Las versiones exactas en las que hicimos las mediciones están etiquetadas en el repositorio de bitbucket como `hacer_mediciones` la versión de las mediciones scheduler original y como `Medir_MLFQ_simple` a la de nuestro scheduler. La etiqueta`Medir_MLFQ_simple` está en una rama que después no se fusiona a `master` y eso puede parecer muy raro, pero es porque en la primera versión en la que teníamos el MLFQ sin bugs ya teníamos hecho para que haya distinto *quantum* para las distintas colas, entonces des-hicimos eso en esa rama para hacer las mediciones
+Las versiones exactas en las que hicimos las mediciones están etiquetadas en el repositorio de bitbucket como `hacer_mediciones` la versión de las mediciones scheduler original y como `Medir_MLFQ_simple` a la de nuestro scheduler. La etiqueta`Medir_MLFQ_simple` está en una rama que después no se fusiona a `master` y eso puede parecer muy raro, pero es porque en la primera versión en la que teníamos el MLFQ sin bugs ya teníamos hecho para que haya distinto *quantum* para las distintas colas, entonces des-hicimos eso en esa rama para hacer las mediciones
 
 Cada vez que eliminábamos un 0 del *quantum* para hacer una medición, en los archivos `cpubench` e `iobench` aumentábamos por un cero la variable `MINTICKS` para que de esta manera los programas corran durante la misma cantidad de tiempo antes de imprimir un resultado.
 
-    Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en promedio cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de jupyter notebooks que tiene el código con el cuál se realizaron los gráficos.
+Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en promedio cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de jupyter notebooks que tiene el código con el cuál se realizaron los gráficos.
 
 A continuación están los gráficos para cada *quantum*, a la izquierda el del scheduler original de `xv6` y a la derecha de nuestro MLFQ:
 
-| ![quantumnormalrr](imagenes/rr_normal.jpg "Round robin quantum normal") | ![quantumnormalmlfq](imagenes/mlfq_normal.jpg "MLFQ quantum normal") |
-| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| ![quantum10menorrr](imagenes/rr_10less.jpg "Round Robin quantum 10 veces menor")                                                       | ![quantum-10menor-mlfq](imagenes/mlfq_10less.jpg "MLFQ quantum 10 veces menor")                                               |
-| ![quantum100menorrr](imagenes/rr_100less.jpg "Round Robin quantum 100 veces menor")                                                     | ![quantum-100menor-mlfq](imagenes/mlfq_100less.jpg "MLFQ quantum 100 veces menor")                                             |
+| ![quantumnormalrr](imagenes/rr_normal.jpg "Round robin quantum normal")             | ![quantumnormalmlfq](imagenes/mlfq_normal.jpg "MLFQ quantum normal")               |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| ![quantum10menorrr](imagenes/rr_10less.jpg "Round Robin quantum 10 veces menor")    | ![quantum-10menor-mlfq](imagenes/mlfq_10less.jpg "MLFQ quantum 10 veces menor")    |
+| ![quantum100menorrr](imagenes/rr_100less.jpg "Round Robin quantum 100 veces menor") | ![quantum-100menor-mlfq](imagenes/mlfq_100less.jpg "MLFQ quantum 100 veces menor") |
 
 ### Análisis
 
@@ -273,19 +272,18 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 - Del planificador:
   
-    1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
+  1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
   
-    2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de *quantum*.
+  2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de *quantum*.
   
-    3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
+  3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
   
-    4. [ ] (Difícil) Cuando `xv6` corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
+  4. [ ] (Difícil) Cuando `xv6` corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
   
-    5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
+  5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
-    
-  
+
     - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ## Quantum distinto por prioridad
