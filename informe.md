@@ -290,7 +290,7 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 En el planificador original de `xv6` un *quantum* mide lo mismo que un tick del sistema, el cual esta definido en `lapic.c` y el cual dura 10 millones de clocks del procesador, cada vez que se aumenta el tick de `xv6` es porque ocurrió una interrupción por tiempo. En `trap.c` se encuentra este fragmento de código:
 
-```
+```c
 // Force process to give up CPU on clock tick.
 // If interrupts were on while locks held, would need to check nlock.
   if(myproc() && myproc()->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
@@ -317,7 +317,7 @@ Debido a que la única forma que encontramos de llevar la cuenta del tiempo pasa
 
 Finalmente la parte modificada de `trap.c` quedó de la siguiente manera:
 
-```
+```c
 // Force process to give up CPU on clock tick.
 // If interrupts were on while locks held, would need to check nlock.
 if(myproc() && myproc()->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER){
