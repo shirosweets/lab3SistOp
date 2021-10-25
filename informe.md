@@ -34,8 +34,9 @@
     - [Extraer_archivos.sh](#extraer_archivossh)
   - [Mediciones](#mediciones)
     - [Análisis](#análisis)
+- [En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el **round robin**, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante **5 minutos**, lo cual para *quantum* normal y 10 veces más corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza para tantas mediciones (por lo general sólo devolvía 1/2 de mediciones para CPU).](#en-los-gráficos-se-puede-ver-que-cuando-hay-cpu-e-io-mezclados-a-los-io-les-va-mucho-mejor-con-el-mlfq-que-con-el-round-robin-lo-cual-es-lo-esperado-en-el-caso-del-quantum-100-veces-menor-los-datos-se-ven-un-poco-raros-lo-cuál-posiblemente-se-deba-a-que-nosotros-hicimos-todas-les-mediciones-dejando-correr-a-los-programas-durante-5-minutos-lo-cual-para-quantum-normal-y-10-veces-más-corto-alcanza-para-un-montón-de-mediciones-pero-para-el-100-veces-más-corto-no-alcanza-para-tantas-mediciones-por-lo-general-sólo-devolvía-12-de-mediciones-para-cpu)
 - [Puntos estrellas](#puntos-estrellas)
-  - [*quantum* distinto por prioridad](#quantum-distinto-por-prioridad)
+  - [*Quantum* distinto por prioridad](#quantum-distinto-por-prioridad)
   - [Priority Boost de OSTEP](#priority-boost-de-ostep)
 - [Mediciones MLFQ final](#mediciones-mlfq-final)
     - [Análisis](#análisis-1)
@@ -201,7 +202,7 @@ Lo más importante de la implementación con colas es que mejora ligeramente el 
 
 Con la implementación que tenemos siempre se va a correr el proceso de prioridad más alta que este en estado `RUNNABLE`, luego de ejecutarse este proceso se van a revisar las colas nuevamente para buscar otro proceso por correr, en caso de que no haya un proceso de prioridad más alta que el que se ejecutó anteriormente, se seguirán ejecutando los procesos de la misma cola de prioridad de el proceso anterior, de esta forma los procesos de la misma prioridad se corren en *round-robin* por el *quantum* establecido.
 
-Es importante observar que en esta implementación siempre que se acaba el quentum de un proceso (sin importar cuento tiempo consecutivo llevaba ejecutándose) se baja la prioridad del proceso.
+Es importante observar que en esta implementación siempre que se acaba el *quantum* de un proceso (sin importar cuento tiempo consecutivo llevaba ejecutándose) se baja la prioridad del proceso.
 
 ## Starvation
 
@@ -257,7 +258,7 @@ Las versiones exactas en las que hicimos las mediciones están etiquetadas en el
 
 Cada vez que eliminábamos un 0 del *quantum* para hacer una medición, en los archivos `cpubench` e `iobench` aumentábamos por un cero la variable `MINTICKS` para que de esta manera los programas corran durante la misma cantidad de tiempo antes de imprimir un resultado.
 
-Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en **promedio** cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de **jupyter notebooks** que tiene el código con el cuál se realizaron los gráficos.
+Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en **promedio** cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el script  que tiene el código con el cuál se realizaron los gráficos.
 
 A continuación están los gráficos para cada *quantum*, a la izquierda el del scheduler original de `xv6` y a la derecha de nuestro MLFQ:
 
@@ -268,7 +269,11 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 ### Análisis
 
+<<<<<<< HEAD
 En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el **round robin**, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante **5 minutos**, lo cual para *quantum* normal y 10 veces más corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza para tantas mediciones (por lo general sólo devolvía 1/2 de mediciones para CPU).
+=======
+En los gráficos se puede ver que cuando hay CPU e IO mezclados a los IO les va mucho mejor con el MLFQ que con el round robin, lo cual es lo esperado. En el caso del *quantum* 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante 5 minutos, lo cual para *quantum* normal y 10 veces mas corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza por lo general sólo devolvía 1/2 mediciones para CPU.
+>>>>>>> ac28aca5dcc7572368a42ed1d2c22574d29e3363
 
 Otra cosa interesante es saber cual planificador es más eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso.
 
@@ -307,7 +312,7 @@ La mayor diferencia está en `1 iobench` con *quantum* normal (21.6 %), que es e
   
   - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
-## *quantum* distinto por prioridad
+## *Quantum* distinto por prioridad
 
 En el planificador original de `xv6` un *quantum* mide lo mismo que un tick del sistema, el cual esta definido en `lapic.c` y el cual dura 10 millones de clocks del procesador, cada vez que se aumenta el tick de `xv6` es porque ocurrió una interrupción por tiempo. En `trap.c` se encuentra este fragmento de código:
 
