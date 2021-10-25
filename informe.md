@@ -389,7 +389,7 @@ En estos gráficos se puede ver que con *quantums* largos a los `iobench` les fu
 
 Notamos que cuando el *quantum* es largo y las operaciones IO se demoran menos de lo que dura el *quantum*, los procesos `iobench` se acaban bajando de prioridad bastante rápido y están la mayor parte del tiempo en la prioridad mínima junto con los `cpubench`. 
 
-Cuando el *quantum* es más corto, y las operaciones IO se demoran muchos *quantums* en cambio, los procesos `iobench` si están mucho más en la proridad más alta, mientras que los `cpubench` bajan.
+Cuando el *quantum* es más corto, y las operaciones IO se demoran muchos *quantums* en cambio, los procesos `iobench` si están mucho más en la prioridad más alta, mientras que los `cpubench` bajan.
 
 El porque pasa eso no lo tenemos del todo claro, pero creemos que debe tener que ver con que si los `iobench` están en prioridad más alta, se los elige más y cuando hay una interrupción por tiempo, siempre el proceso que está corriendo es un `iobench` (cuando hay una interrupción por tiempo se baja la prioridad del `iobench`).
 
