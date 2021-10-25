@@ -12,13 +12,15 @@
 
 # Contenido
 
+- [Informe lab 3](#informe-lab-3)
+- [Contenido](#contenido)
 - [Entendiendo el planificador original de xv6](#entendiendo-el-planificador-original-de-xv6)
   - [Pregunta 1](#pregunta-1)
     - [Respuesta 1](#respuesta-1)
   - [Pregunta 2](#pregunta-2)
     - [Respuesta 2a](#respuesta-2a)
     - [Respuesta 2b](#respuesta-2b)
-- [Rastreando la prioridad de los procesos](rastreando-la-prioridad-de-los-procesos)
+- [Rastreando la prioridad de los procesos](#rastreando-la-prioridad-de-los-procesos)
   - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
   - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Implementando MLFQ](#implementando-mlfq)
@@ -29,14 +31,14 @@
   - [Cómo el planificador afecta a los procesos](#cómo-el-planificador-afecta-a-los-procesos)
   - [Automatizado de testeos](#automatizado-de-testeos)
     - [AutoMed.sh](#automedsh)
-    - [Extraer_archivos.sh](#extraerarchivossh)
+    - [Extraer_archivos.sh](#extraer_archivossh)
   - [Mediciones](#mediciones)
     - [Análisis](#análisis)
 - [Puntos estrellas](#puntos-estrellas)
   - [Quantum distinto por prioridad](#quantum-distinto-por-prioridad)
   - [Priority Boost de OSTEP](#priority-boost-de-ostep)
 - [Mediciones MLFQ final](#mediciones-mlfq-final)
-  - [Análisis](#análisis)
+    - [Análisis](#análisis-1)
 
 ---
 
@@ -53,7 +55,7 @@
 
 La política que utiliza el `xv6` es **round robin**, que permite que los procesos corran consecutivamente durante un tiempo determinado denominado *quantum*.
 
-El round robin de xv6 funciona teniendo todos los procesos en una tabla de procesos, y recorriendo esa tabla ejecutando cada ves al siguiente proceso.
+El **round robin** de `xv6` funciona teniendo todos los procesos en una tabla de procesos, y recorriendo esa tabla ejecutando cada ves al siguiente proceso.
 
 ```c
 void
@@ -187,7 +189,7 @@ Finalmente implementar la planificación propiamente dicha para que nuestro `xv6
 
 ## MLFQ regla 1: correr el proceso de mayor prioridad
 
-Para poder facilitar el manejo de las prioridades disidimos usar colas, para hacer esto cambiamos el `struct ptable` del archivo `proc.c` que tiene la estructura de la tabla de procesos, para que contenga dos arreglos de punteros a procesos, `queue_first` que contiene los primeros procesos en la cola de cada prioridad, y `queue_last` que contiene los últimos procesos de la cola. También modificamos el `struct proc` que contiene la estructura de los procesos para añadir un puntero `next_proc` el cual va a apuntar al siguiente proceso en la cola.
+Para poder facilitar el manejo de las prioridades decidimos usar colas, para hacer esto cambiamos el `struct ptable` del archivo `proc.c` que tiene la estructura de la tabla de procesos, para que contenga dos arreglos de punteros a procesos, `queue_first` que contiene los primeros procesos en la cola de cada prioridad, y `queue_last` que contiene los últimos procesos de la cola. También modificamos el `struct proc` que contiene la estructura de los procesos para añadir un puntero `next_proc` el cual va a apuntar al siguiente proceso en la cola.
 
 Al inicializarse `xv6` la memoria se inicializa en 0, por lo que las colas se inicializan en 0, luego al inicializarse un proceso en `userinit`, esta función hace una llamada a `allocproc` que asigna la prioridad más alta al proceso, y luego se encola en la cola correspondiente. En el planificador se realiza un ciclo para encontrar el proceso de la prioridad más alta revisando el primer proceso de la cola de cada prioridad, dado que las colas solo tienen procesos que están en estado `RUNNABLE`, con ver si el primer elemento de la cola existe es suficiente para saber si hay procesos de dicha prioridad por correr. El ciclo comienza revisando la cola de prioridad más alta (prioridad 0), por lo que siempre se va a correr el proceso de mayor prioridad.
 
@@ -213,13 +215,13 @@ El tipo de planificador puede influir en cuantos recursos se le asignan a cada p
 
 Es interesante y muy útil, saber como afecta de distinta manera a los procesos de distintos tipos. Para eso, junto con la consigna nos dieron 2 programas para realizar distintas mediciones.
 
-El programa `cpubench` mide la cantidad de operaciones de punto flotante que puede hacer en una cierta cantidad de ticks del sistema operativo. En particular, las operaciones en `MINTICKS` (definido por defecto en `250`) ticks del sistema operativo, y lo imprime en KFLOPT (Kilo Floating Point Operations Per Tick) (por defecto pone como unidad MFLOPT (mega en lugar de kilo), pero es un error, ya que lo calcula en kilo).
+El programa `cpubench` mide la cantidad de operaciones de punto flotante que puede hacer en una cierta cantidad de ticks del sistema operativo. En particular, las operaciones en `MINTICKS` (definido por defecto en `250`) ticks del sistema operativo, y lo imprime en KFLOPT (*Kilo Floating Point Operations Per Tick*) (por defecto pone como unidad MFLOPT (mega en lugar de kilo), pero es un error, ya que lo calcula en kilo).
 
 Los ticks del sistema operativos se obtienen con la llamada al sistema `uptime` y son la cantidad de interrupciones por timer producidos desde el inicio del sistema. Esto causa que si se hace que el timer sea más chico, las mediciones de `cpubench` den menos, porque obviamente en menos tiempo se hacen menos cosas, pero, tiene la ventaja de que no depende de la velocidad del procesador, ya que por más que cambie la velocidad a la que el procesador ejecuta las instrucciones, la cantidad de instrucciones ejecutadas entre una interrupción y la otra son las mismas.
 
 El otro programa que dieron es `iobench` que mide la cantidad de escrituras y lecturas de un archivo que puede hacer en `MINTICKS` ticks del sistema operativo, y las imprime en IOP`MINTICKS`T (Input Output Operations Per `MINTICKS` Ticks).
 
-Nosotros decidimos modificar un poco estos programas, para hacer que en lugar de imprimir la cantidad de operaciones por cierta cantidad de ticks, imprima la cantidad de operaciones y la cantidad de ticks por separado, para hacer nosotros la división, y evitar la perdida de error por el redondeo de la división entera (en `iobench` habían hecho que se imprima en `MINTICKS` ticks posiblemente para evitar un poco eso, pero nos pareció mejor directamente imprimir todo).
+Nosotros decidimos modificar un poco estos programas, para hacer que en lugar de imprimir la cantidad de operaciones por cierta cantidad de ticks, imprima la cantidad de operaciones y la cantidad de ticks por separado, para hacer nosotros la división, y evitar la pérdida de error por el redondeo de la división entera (en `iobench` habían hecho que se imprima en `MINTICKS` ticks posiblemente para evitar un poco eso, pero nos pareció mejor directamente imprimir todo).
 
 ## Automatizado de testeos
 
@@ -249,13 +251,13 @@ Para usar los scripts hay que, desde la carpeta `xv6-modularized`, después de h
 
 En la consigna se pide hacer mediciones con distintas cantidades de `iobench` y `cpubench` y usando el *quantum* normal, 10 , 100 y 1000 veces menor para el `scheduler` original y el nuestro antes de hacer los puntos estrellas (y opcionalmente después, ahora vamos a hacer la comparación entre esos 2).
 
-A las mediciones con 1000 veces menor decidimos no realizarlo ya que el `xv6` se vuelve tan lento que hace falta mucho tiempo para obtener alguna medición y mucho mas todavía para obtener muchas mediciones como para que sea mas preciso.
+A las mediciones con 1000 veces menor decidimos no realizarlo ya que el `xv6` se vuelve tan lento que hace falta mucho tiempo para obtener alguna medición y mucho más todavía para obtener muchas mediciones como para que sea más preciso.
 
 Las versiones exactas en las que hicimos las mediciones están etiquetadas en el repositorio de bitbucket como `hacer_mediciones` la versión de las mediciones scheduler original y como `Medir_MLFQ_simple` a la de nuestro scheduler. La etiqueta`Medir_MLFQ_simple` está en una rama que después no se fusiona a `master` y eso puede parecer muy raro, pero es porque en la primera versión en la que teníamos el MLFQ sin bugs ya teníamos hecho para que haya distinto *quantum* para las distintas colas, entonces des-hicimos eso en esa rama para hacer las mediciones
 
 Cada vez que eliminábamos un 0 del *quantum* para hacer una medición, en los archivos `cpubench` e `iobench` aumentábamos por un cero la variable `MINTICKS` para que de esta manera los programas corran durante la misma cantidad de tiempo antes de imprimir un resultado.
 
-Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en **promedio** cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de jupyter notebooks que tiene el código con el cuál se realizaron los gráficos.
+Para poder comparar los resultados en los distintos schedulers hicimos un gráfico para cada *quantum* para cada scheduler en el cuál se puede ver cuantas operaciones por tick hizo en **promedio** cada uno de los programas en ese caso. En la carpeta mediciones se encuentran los datos y en la carpeta gráficos se encuentra el programa de **jupyter notebooks** que tiene el código con el cuál se realizaron los gráficos.
 
 A continuación están los gráficos para cada *quantum*, a la izquierda el del scheduler original de `xv6` y a la derecha de nuestro MLFQ:
 
@@ -266,13 +268,13 @@ A continuación están los gráficos para cada *quantum*, a la izquierda el del 
 
 ### Análisis
 
-En los gráficos se puede ver que cuando hay CPU e IO mesclados a los IO les va mucho mejor con el MLFQ que con el round robing, lo cual es lo esperado. En el caso del quantum 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante 5 minutos, lo cual para quantum normal y 10 veces mas corto alcanza para un montón de mediciones, pero para el 100 veces mas corto no alcanza para tantas mediciones.
+En los gráficos se puede ver que cuando hay CPU e IO mesclados a los IO les va mucho mejor con el MLFQ que con el **round robing**, lo cual es lo esperado. En el caso del quantum 100 veces menor los datos se ven un poco raros, lo cuál posiblemente se deba a que nosotros hicimos todas les mediciones dejando correr a los programas durante **5 minutos**, lo cual para quantum normal y 10 veces más corto alcanza para un montón de mediciones, pero para el 100 veces más corto no alcanza para tantas mediciones.
 
-Otra cosa interesante es saber cual planificador es mas eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso.
+Otra cosa interesante es saber cual planificador es más eficiente, en el sentido de que pierde menos tiempo eligiendo un proceso.
 
 Mirando el código es difícil saber, ya que el MLFQ tiene menos código para elegir un proceso, pero tiene que andar encolando y descolando a los procesos.
 
-La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK llega con un solo `cpubench` en cada uno, y a cuantos IO/TICK llega con un solo `iobench`  en cada uno, ambas cosas para quantum normal y para quentum 10 veces mas corto (para 100 veces mas corto no por lo de que son muy imprecisos los datos).
+La mejor forma que se nos ocurre de comparar eso es comparar a cuantos KFLO/TICK llega con un solo `cpubench` en cada uno, y a cuantos IO/TICK llega con un solo `iobench`  en cada uno, ambas cosas para quantum normal y para quentum 10 veces más corto (para 100 veces más corto no por lo de que son muy imprecisos los datos).
 
 En esta tabla están esos datos:
 
@@ -280,12 +282,12 @@ En esta tabla están esos datos:
 | ------------------------------ | ---------------------------- | ------------ | ----------- |
 | Quantum<br/>normal             | KFLO/TICK<br/>(1 `cpubench`) | 210.71       | 214.55      |
 |                                | IO/TICK<br/>(1 `iobench`)    | 8.2594       | 6.7898      |
-| Quantum 10<br/>veces mas corto | KFLO/TICK<br/>(1 `cpubench`) | 18.701       | 17.925      |
+| Quantum 10<br/>veces más corto | KFLO/TICK<br/>(1 `cpubench`) | 18.701       | 17.925      |
 |                                | IO/TICK<br/>(1 `iobench`)    | .76522       | .75951      |
 
 Como se puede ver, no hay demasiada diferencia en estos datos, en 3 de los casos le fue mejor a round robing y en 1 al MLFQ.
 
-La mayor diferencia está en 1 `iobench` con quantum normal (21.6 %), que es el caso en el que posiblemente se shedulee mas veces por tick (si se hacen una 8 operaciones por tick, se shedulea unas 8 veces por tick por lo menos, porque cada ves que se inicia un IO request se shedulea). En el caso del `cpubench` solo se shedulea una vez por tick, por lo que el tiempo de sheduleo posiblemente sea mucho mas insignificante.
+La mayor diferencia está en `1 iobench` con quantum normal (21.6 %), que es el caso en el que posiblemente se shedulee más veces por tick (si se hacen una 8 operaciones por tick, se shedulea unas 8 veces por tick por lo menos, porque cada ves que se inicia un IO request se shedulea). En el caso del `cpubench` solo se shedulea una vez por tick, por lo que el tiempo de sheduleo posiblemente sea mucho más insignificante.
 
 # Puntos estrellas
 
@@ -326,7 +328,7 @@ Decidimos que el *quantum* de cada prioridad sería de la siguiente manera:
 | 1         | 2 ticks |
 | 2         | 4 ticks |
 
-Es decir para cada prioridad su *quantum* sería igual a 2^prioridad.
+Es decir para cada prioridad su *quantum* sería igual a `2^prioridad`.
 
 Para poder llevar la cuenta del tiempo (cantidad de ticks) que llevaba cada proceso corriendo en su prioridad actual añadimos un campo al `struct proc` del archivo `proc.h` llamado `ticks_running`. Cada vez que se inicia un proceso el mismo se inicializa con `ticks_running = 0`, luego mientras el proceso se está ejecutando, cada vez que ocurra una interrupción por tiempo se aumenta esta variable en 1 y se revisa si `ticks_running` es mayor o igual a su *quantum* correspondiente y en este caso se hace `yield()` y se devuelve el CPU.
 
@@ -347,29 +349,43 @@ if(myproc() && myproc()->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER){
 }
 ```
 
-Observar que como en `xv6` no tenemos la manera de representar potencias 2^prioridad es equivalente a 1 << prioridad, en donde << se refiere a un logical shift left.
+Observar que como en `xv6` no tenemos la manera de representar potencias `2^prioridad` es equivalente a `1 << prioridad`, en donde `<<` se refiere a un **logical shift left**.
 
 ## Priority Boost de OSTEP
 
-En este punto se cambio la implementación anterior del priority boost en el que se asciende la prioridad del proceso cada vez que este se bloquea, a una implementación mas parecida a la del libro OSTEP en la que se asciende la prioridad de todos los procesos a la prioridad más alta cada cierta cantidad de tiempo.
+En este punto se cambio la implementación anterior del priority boost en el que se asciende la prioridad del proceso cada vez que este se bloquea, a una implementación más parecida a la del libro OSTEP en la que se asciende la prioridad de todos los procesos a la prioridad más alta cada cierta cantidad de tiempo.
 
-Para hacer esto creamos una función `priority_boost` en el archivo `proc.c` en el cual se recorren todos los procesos en la tabla de procesos y se coloca la prioridad de cada uno en 0 (que es la prioridad más alta). Decidimos definir una constante `BOOSTTIMER` que se encuentra definida en el archivo `param.h` para establecer la cantidad de ticks que pasan entre cada priority boost.
+Para hacer esto creamos una función `priority_boost` en el archivo `proc.c` en el cual se recorren todos los procesos en la tabla de procesos y se coloca la prioridad de cada uno en 0 (que es la prioridad más alta).
 
-Cada vez que se realiza una interrupción por tiempo en `xv6` se aumenta el contador de ticks que son los que llevan la cuenta del tiempo que ha pasado, por eso decidimos que en el archivo `trap.c`, en donde se aumenta la variable ticks , se chequee si ya paso la cantidad de tiempo definido por la constante `BOOSTTIMER`, de esta forma si `ticks % BOOSTTIMER == 0` se hace la llamada a `priority_boost` para ascender la prioridad de los procesos.
+Decidimos definir una constante `BOOSTTIMER` que se encuentra definida en el archivo `param.h` para establecer la cantidad de ticks que pasan entre cada priority boost.
+
+Cada vez que se realiza una interrupción por tiempo en `xv6` se aumenta el contador de ticks que son los que llevan la cuenta del tiempo que ha pasado, por eso decidimos que en el archivo `trap.c`, en donde se aumenta la variable `ticks`, se chequee si ya paso la cantidad de tiempo definido por la constante `BOOSTTIMER`, de esta forma si `ticks % BOOSTTIMER == 0` se hace la llamada a `priority_boost` para ascender la prioridad de los procesos.
 
 Debido a la implementación con colas que manejamos luego de ascender la prioridad de los procesos es importante actualizar el primer y último elemento de cada cola de prioridad, en este caso lo que hacemos es concatenar los procesos de manera que el último proceso de cada cola apunte al primer proceso de la siguiente cola no vacía. A continuación colocamos unas imágenes para que se entienda mejor el proceso.
 
 Colas antes del priority boost:
 
-![queue-before-boost](imagenes/queue-before-boost.jpg "queues before priority boost")
+![queue-before-boost](imagenes/queue-before-boost_v2.jpg "queues before priority boost")
 
 Colas después del priority boost:
 
-![queue-after-boost](imagenes/queue-after-boost.jpg "queues after priority boost")
+![queue-after-boost](imagenes/queue-after-boost_v2.jpg "queues after priority boost")
+
+Cuando se hace el **priority boost**, `queue_first[0]` se queda como está, `queue_last[0]` pasa a ser lo que antes era `queue_last[2]`, y `queue_first[1]`, `queue_last[1]`, `queue_first[2]` y `queue_last[2]` pasan a ser `NULL`.
+
+Después del **priority boost** `queue_first[1]`, `queue_last[1]`, `queue_first[2]` y `queue_last[2]` no apuntan a esos elementos, si no que, esos elementos son los que antes eran apuntados por esas variables
+
+```c
+// Set to NULL pointers to the other queues
+for(i = 1; i < NPRIO; i++){
+  ptable.queue_first[i] = 0;
+  ptable.queue_last[i] = 0;
+}
+```
 
 # Mediciones MLFQ final
 
-Finalmente, a pesar de que no se indica en la consigna, decidimos hacer una medición final con el planificador MLFQ que incluye la implementación de los puntos estrellas indicados anteriormente, para poder ver como varía su desempeño en comparación al MLFQ básico y al planificador *round-robin*.
+Finalmente, a pesar de que no se indica en la consigna, decidimos hacer una medición final con el planificador **MLFQ** que incluye la implementación de los puntos estrellas indicados anteriormente, para poder ver como varía su desempeño en comparación al MLFQ básico y al planificador *round-robin*.
 
 * *Quantum* normal:
 
@@ -387,11 +403,11 @@ Finalmente, a pesar de que no se indica en la consigna, decidimos hacer una medi
 
 En estos gráficos se puede ver que con quantums largos a los `iobench` les fue peor que con el otro MLFQ, pero con quantums cortos les fue mejor. Esto no sabemos con exactitud porque es, pero tenemos alguna idea:
 
-Notamos que cuando el quantum es largo y las operaciones IO se demoran menos de lo que dura el quantum, los procesos `iobench` se acaban bajando de prioridad bastante rápido y están la mayor parte del tiempo en la prioridad mínima junto con los `cpubench`. 
+Notamos que cuando el **quantum es largo** y las **operaciones IO** se demoran menos de lo que dura el quantum, los procesos `iobench` se acaban bajando de prioridad bastante rápido y están la mayor parte del tiempo en la prioridad mínima junto con los `cpubench`.
 
-Cuando el quantum es mas corto, y las operaciones IO se demoran muchos quantums en cambio, los procesos `iobench` si están mucho mas en la proridad mas alta, mientras que los `cpubench` bajan.
+Cuando el **quantum es más corto**, y las **operaciones IO** se demoran muchos quantums en cambio, los procesos `iobench` si están mucho más en la proridad más alta, mientras que los `cpubench` bajan.
 
-El porque pasa eso no lo tenemos del todo claro, pero creemos que debe tener que ver con que si los `iobench` están en prioridad mas alta, se los elige mas y cuando hay una interrupción por tiempo, siempre el proceso que está corriendo es un `iobench` (cuando hay una interrupción por tiempo se baja la prioridad del `iobench`).
+El porque pasa eso no lo tenemos del todo claro, pero creemos que debe tener que ver con que si los `iobench` están en prioridad más alta, se los elige más y cuando hay una interrupción por tiempo, siempre el proceso que está corriendo es un `iobench` (cuando hay una interrupción por tiempo se baja la prioridad del `iobench`).
 
 ---
 
