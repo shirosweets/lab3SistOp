@@ -15,30 +15,30 @@
 - [Informe lab 3](#informe-lab-3)
 - [Contenido](#contenido)
 - [Entendiendo el planificador original de xv6](#entendiendo-el-planificador-original-de-xv6)
-  - [Pregunta 1](#pregunta-1)
-    - [Respuesta 1](#respuesta-1)
-  - [Pregunta 2](#pregunta-2)
-    - [Respuesta 2a](#respuesta-2a)
-    - [Respuesta 2b](#respuesta-2b)
+    - [Pregunta 1](#pregunta-1)
+        - [Respuesta 1](#respuesta-1)
+    - [Pregunta 2](#pregunta-2)
+        - [Respuesta 2a](#respuesta-2a)
+        - [Respuesta 2b](#respuesta-2b)
 - [Rastreando la prioridad de los procesos](#rastreando-la-prioridad-de-los-procesos)
-  - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
-  - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
+    - [MLFQ regla 3: rastreo de prioridad y asignación máxima](#mlfq-regla-3-rastreo-de-prioridad-y-asignación-máxima)
+    - [MLFQ regla 4: descenso y ascenso de prioridad](#mlfq-regla-4-descenso-y-ascenso-de-prioridad)
 - [Implementando MLFQ](#implementando-mlfq)
-  - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
-  - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
-  - [Starvation](#starvation)
+    - [MLFQ regla 1: correr el proceso de mayor prioridad](#mlfq-regla-1-correr-el-proceso-de-mayor-prioridad)
+    - [MLFQ regla 2: round-robin para procesos de misma prioridad](#mlfq-regla-2-round-robin-para-procesos-de-misma-prioridad)
+    - [Starvation](#starvation)
 - [Mediciones y comparaciones entre los schedulers](#mediciones-y-comparaciones-entre-los-schedulers)
-  - [Cómo el planificador afecta a los procesos](#cómo-el-planificador-afecta-a-los-procesos)
-  - [Automatizado de testeos](#automatizado-de-testeos)
-    - [AutoMed.sh](#automedsh)
-    - [Extraer_archivos.sh](#extraer_archivossh)
-  - [Mediciones](#mediciones)
-    - [Análisis](#análisis)
+    - [Cómo el planificador afecta a los procesos](#cómo-el-planificador-afecta-a-los-procesos)
+    - [Automatizado de testeos](#automatizado-de-testeos)
+        - [AutoMed.sh](#automedsh)
+        - [Extraer_archivos.sh](#extraer_archivossh)
+    - [Mediciones](#mediciones)
+        - [Análisis](#análisis)
 - [Puntos estrellas](#puntos-estrellas)
-  - [*Quantum* distinto por prioridad](#quantum-distinto-por-prioridad)
-  - [Priority Boost de OSTEP](#priority-boost-de-ostep)
+    - [*Quantum* distinto por prioridad](#quantum-distinto-por-prioridad)
+    - [Priority Boost de OSTEP](#priority-boost-de-ostep)
 - [Mediciones MLFQ final](#mediciones-mlfq-final)
-  - [Análisis](#análisis-1)
+    - [Análisis](#análisis-1)
 
 ---
 
@@ -46,8 +46,8 @@
 
 ## Pregunta 1
 
-1. Analizar el código del planificador y responda:
-   a. ¿Qué política utiliza `xv6` para elegir el próximo proceso a correr?
+  1. Analizar el código del planificador y responda:
+      a. ¿Qué política utiliza `xv6` para elegir el próximo proceso a correr?
 
 > Pista: `xv6` nunca sale de la función scheduler por medios "normales".
 
@@ -125,15 +125,14 @@ Habiendo visto las propiedades del planificador existente, reemplazarlo con un p
 
 1. Agregue un campo en `struct proc` que guarde la prioridad del proceso (entre `0` y `NPRIO-1` para `#define NPRIO 3` niveles en total) y manténgala actualizada según el comportamiento del proceso:
    
-   * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
+    * MLFQ regla 3: Cuando un proceso se inicia, su prioridad será máxima.
    
-   * MLFQ regla 4:
+    * MLFQ regla 4:
      
-     * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
+        * Descender de prioridad cada vez que el proceso pasa todo un *quantum* realizando cómputo.
      
-     * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
-       
-       > Nota: Este comportamiento es distinto al del MLFQ del libro.
+        * Ascender de prioridad cada vez que el proceso bloquea antes de terminar su *quantum*.
+        > Nota: Este comportamiento es distinto al del MLFQ del libro.
 
 2. Para comprobar que estos cambios se hicieron correctamente, modifique la función `procdump` (que se invoca con `CTRL-P`) para que imprima la prioridad de los procesos. Así, al correr nuevamente `iobench` y `cpubench`, debería darse que `cpubench` tenga baja prioridad mientras que `iobench` tenga alta prioridad.
 
@@ -178,8 +177,8 @@ Finalmente implementar la planificación propiamente dicha para que nuestro `xv6
 
 1. Modifique el planificador de manera que seleccione el próximo proceso a planificar siguiendo las siguientes reglas:
    
-   * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
-   * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en *round-robin* por el *quantum* determinado.
+    * MLFQ regla 1: Si el proceso `A` tiene mayor prioridad que el proceso `B`, corre `A`. (y no `B`)
+    * MLFQ regla 2: Si dos procesos `A` y `B` tienen la misma prioridad, corren en *round-robin* por el *quantum* determinado.
 
 2. Repita las mediciones de la segunda parte para ver las propiedades del nuevo planificador.
 
@@ -293,19 +292,19 @@ La mayor diferencia está en 1 `iobench` con *quantum* normal (21.6 %), que es e
 
 - Del planificador:
   
-  1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
+    1. [x] Reemplace la política de ascenso de prioridad por la regla 5 de MLFQ de OSTEP: **Priority boost**.
+    
+    2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de *quantum*.
   
-  2. [x] Modifique el planificador de manera que los distintos niveles de prioridad tengan distintas longitudes de *quantum*.
+    3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
   
-  3. [ ] Cuando no hay procesos para ejecutar, el planificador consume procesador de manera innecesaria haciendo `busy waiting`. Modifique el planificador de manera que ponga a dormir el procesador cuando no hay procesos para planificar, utilizando la instrucción `hlt`.
+    4. [ ] (Difícil) Cuando `xv6` corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
   
-  4. [ ] (Difícil) Cuando `xv6` corre en una máquina virtual con **2 procesadores**, la performance de los procesos varía significativamente según cuántos procesos haya corriendo simultáneamente. ¿Se sigue dando este fenómeno si el planificador tiene en cuenta la localidad de los procesos e intenta mantenerlos en el mismo procesador?
-  
-  5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
+    5. [ ] (Muy difícil) Y si no quisiéramos usar los *ticks periódicos del timer* por el problema de *(1)*, ¿qué haríamos? Investigue cómo funciona e implemente un **tickless kernel**.
 
 - De las herramientas de medición:
   
-  - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
+    - [ ] Llevar cuenta de cuánto tiempo de procesador se le ha asignado a cada proceso, con una system call para leer esta información desde espacio de usuario.
 
 ## *Quantum* distinto por prioridad
 
