@@ -41,8 +41,18 @@ enqueue(struct proc *p)
 
   p->next_proc = 0;
   ptable.queue_last[p->priority] = p;
+  // (milagro) Conceptualmente, esta operacion no esta relacionada con
+  // encolar un proceso. Si bien la ejecutan siempre "cerca" del punto
+  // en el que encolan, igualmente la dejaria fuera de la funcion.
+  // Si uno lee la operacion "enqueue", el nombre no es indicativo de que
+  // ademas se va a cambiar la prioridad del proceso
   p->state = RUNNABLE;
 }
+
+// (mteruel) El TAD queue esta pensado para solo decolar el primer elemento,
+// asi que no era necesario que implementaran la busqueda del proceso
+// adentro de la cola. La firma de este metodo es tradicionalmente
+// struct proc *dequeue(void);
 
 // Removes a process from it's queue
 // It is faster for the first elements of the queue
@@ -311,7 +321,7 @@ exit(void)
         wakeup1(initproc);
     }
   }
-  
+
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -414,7 +424,7 @@ scheduler(void)
 
 // Sets the priority of every process to 0
 // It's called during a timer interrupt
-void 
+void
 priority_boost(void)
 {
   struct proc *p;
@@ -429,7 +439,7 @@ priority_boost(void)
   }
 
   // Since all the processes have the same priority we
-  // concatenate the processes queues, using the first and last process 
+  // concatenate the processes queues, using the first and last process
   // of each non-empty queue
 
   while(first_non_empty_queue < NPRIO && ptable.queue_first[first_non_empty_queue] == 0){
